@@ -18,11 +18,11 @@ export function ExpenseCard({
   onDelete
 }: ExpenseCardProps) {
   return (
-    <div className="bg-surface-lowest p-5 rounded-architectural border border-ghost-border flex items-center justify-between group hover:bg-surface-low transition-colors">
-      <div className="flex items-center gap-4 flex-1 min-w-0">
-        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${expense.status === 'Pago' ? 'bg-secondary' : 'bg-primary animate-pulse'}`} />
-        <div className="min-w-0">
-          <div className="flex items-center gap-3">
+    <div className="bg-surface-lowest p-5 rounded-architectural border border-ghost-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:bg-surface-low transition-colors">
+      <div className="flex items-start sm:items-center gap-4 flex-1 min-w-0">
+        <div className={`w-2 h-2 rounded-full mt-1.5 sm:mt-0 flex-shrink-0 ${expense.status === 'Pago' ? 'bg-secondary' : 'bg-primary animate-pulse'}`} />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
              <p className="text-sm font-heading text-foreground truncate">
                {expense.title}
                {expense.quantity && expense.quantity > 1 && (
@@ -36,13 +36,13 @@ export function ExpenseCard({
              )}
           </div>
           
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex flex-wrap items-center gap-2 mt-1">
             {variant === 'compact' && (
-               <span className="text-[10px] text-tertiary bg-surface-low px-2 py-0.5 rounded uppercase tracking-tighter flex-shrink-0">
+               <span className="text-[10px] text-tertiary bg-surface-low px-2 py-0.5 rounded uppercase tracking-tighter">
                  {expense.category}
                </span>
             )}
-            <span className="text-[10px] text-tertiary font-body flex-shrink-0">
+            <span className="text-[10px] text-tertiary font-body">
               {formatDate(expense.date)}
             </span>
           </div>
@@ -70,9 +70,9 @@ export function ExpenseCard({
         </div>
       </div>
       
-      <div className="flex items-center gap-6 flex-shrink-0">
-        <div className="text-right">
-          <p className="text-sm font-heading text-foreground tabular-nums">{formatCurrency(expense.amount)}</p>
+      <div className="flex items-center justify-between sm:justify-end gap-6 flex-shrink-0 border-t sm:border-t-0 border-ghost-border/30 pt-3 sm:pt-0">
+        <div className="text-left sm:text-right">
+          <p className="text-base sm:text-sm font-heading text-foreground tabular-nums">{formatCurrency(expense.amount)}</p>
           {variant === 'admin' && (
              <p className={`text-[10px] mt-0.5 ${expense.status === 'Pago' ? 'text-secondary' : 'text-primary font-bold'}`}>
                {expense.status}

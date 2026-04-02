@@ -132,9 +132,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Recent Expenses Ledger */}
         <section className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <h3 className="text-lg font-heading text-foreground">Últimos Lançamentos</h3>
-            <Link href="/expenses" className="text-xs font-body text-primary hover:underline flex items-center gap-1 uppercase tracking-wider">
+            <Link href="/expenses" className="text-[10px] sm:text-xs font-body text-primary hover:underline flex items-center gap-1 uppercase tracking-wider">
               Ver Extrato Completo <ChevronRight size={14} />
             </Link>
           </div>
