@@ -5,9 +5,9 @@ export async function GET() {
   const supabase = await createClient()
   
   const { data, error } = await supabase
-    .from('project_settings')
+    .from('suppliers')
     .select('*')
-    .single()
+    .order('name', { ascending: true })
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -16,12 +16,15 @@ export async function GET() {
   return NextResponse.json(data)
 }
 
-export async function PATCH(request: Request) {
+export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
+  // Verify Admin Role
   const { data: roleData } = await supabase
     .from('user_roles')
     .select('role')
@@ -29,30 +32,33 @@ export async function PATCH(request: Request) {
     .single()
 
   if (roleData?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return NextResponse.json({ error: 'Forbidden. Admin role required.' }, { status: 403 })
   }
 
   try {
     const body = await request.json()
-    // Extract only allow-listed fields
-    const { project_name, total_budget, completion_percentage, current_stage } = body
+    const { name, category, contact_name, contact_phone, contact_email, description } = body
 
-    const { data: updatedSettings, error } = await supabase
-      .from('project_settings')
-      .update({
-        project_name,
-        total_budget,
-        completion_percentage,
-        current_stage,
-        updated_at: new Date().toISOString()
+    if (!name) {
+      return NextResponse.json({ error: 'Nome da empresa é obrigatório.' }, { status: 400 })
+    }
+
+    const { data, error } = await supabase
+      .from('suppliers')
+      .insert({
+        name,
+        category,
+        contact_name,
+        contact_phone,
+        contact_email,
+        description
       })
-      .eq('id', body.id || (await supabase.from('project_settings').select('id').single()).data?.id)
       .select()
       .single()
 
     if (error) throw error
 
-    return NextResponse.json(updatedSettings)
+    return NextResponse.json(data, { status: 201 })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

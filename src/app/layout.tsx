@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 };
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import PageContainer from "@/components/PageContainer";
 
 export default function RootLayout({
   children,
@@ -37,9 +38,9 @@ export default function RootLayout({
       >
         <AuthProvider>
           <SafeHeader />
-          <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-8">
+          <PageContainer>
             {children}
-          </main>
+          </PageContainer>
         </AuthProvider>
       </body>
     </html>

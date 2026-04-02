@@ -9,8 +9,11 @@ export async function PUT(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
+  // Verify Admin Role
   const { data: roleData } = await supabase
     .from('user_roles')
     .select('role')
@@ -23,16 +26,22 @@ export async function PUT(
 
   try {
     const body = await request.json()
-    const { title, description, phase_date, status, order_index } = body
+    const { name, category, contact_name, contact_phone, contact_email, description } = body
 
-    const { data: updatedPhase, error } = await supabase
-      .from('project_phases')
+    if (!name) {
+      return NextResponse.json({ error: 'Nome da empresa é obrigatório.' }, { status: 400 })
+    }
+
+    const { data, error } = await supabase
+      .from('suppliers')
       .update({
-        title,
+        name,
+        category,
+        contact_name,
+        contact_phone,
+        contact_email,
         description,
-        phase_date,
-        status,
-        order_index
+        updated_at: new Date().toISOString()
       })
       .eq('id', id)
       .select()
@@ -40,7 +49,7 @@ export async function PUT(
 
     if (error) throw error
 
-    return NextResponse.json(updatedPhase)
+    return NextResponse.json(data)
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
@@ -54,7 +63,9 @@ export async function DELETE(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const { data: roleData } = await supabase
     .from('user_roles')
@@ -67,7 +78,7 @@ export async function DELETE(
   }
 
   const { error } = await supabase
-    .from('project_phases')
+    .from('suppliers')
     .delete()
     .eq('id', id)
 

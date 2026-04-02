@@ -48,3 +48,25 @@ export interface ExpenseWithAttachments extends Expense {
   attachments: Attachment[];
   expense_participants: ExpenseParticipant[];
 }
+
+export interface Supplier {
+  id: string;
+  name: string;
+  category: string;
+  contact_name: string | null;
+  contact_phone: string | null;
+  contact_email: string | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectDocument {
+  id: string;
+  title: string;
+  category: string;
+  file_url: string;
+  version: string | null;
+  description: string | null;
+  created_at: string;
+}

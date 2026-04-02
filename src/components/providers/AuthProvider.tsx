@@ -17,52 +17,97 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<'admin' | 'viewer' | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isMounted, setIsMounted] = useState(false);
-  
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
-    setIsMounted(true);
-    const fetchUserAndRole = async () => {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+    let mounted = true;
+    
+    // Safety timeout: Unlock UI after 3 seconds even if Supabase hangs
+    const timeoutId = setTimeout(() => {
+      if (mounted) {
+        setLoading(false);
+        console.debug('Auth loading safety timeout reached');
+      }
+    }, 3000);
 
-      if (user) {
-        const { data: roleData } = await supabase
+    const checkRole = async (userId: string) => {
+      try {
+        const { data, error } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', user.id)
-          .single();
+          .eq('user_id', userId);
         
-        setRole(roleData?.role || 'viewer');
-      } else {
-        setRole(null);
+        if (error) {
+          console.warn('Role fetch error:', error);
+          return 'viewer';
+        }
+
+        const userRole = data?.[0]?.role?.trim()?.toLowerCase();
+        console.debug('Resolved role for', userId, ':', userRole);
+        
+        // Expondo para debug global (opcional)
+        if (typeof window !== 'undefined') {
+          (window as any)._last_role = userRole;
+          (window as any)._last_user = userId;
+        }
+
+        return (userRole === 'admin') ? 'admin' : 'viewer';
+      } catch (err) {
+        console.error('CheckRole critical failure:', err);
+        return 'viewer';
       }
-      setLoading(false);
     };
 
-    fetchUserAndRole();
+    async function initializeAuth() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const initialUser = session?.user || null;
+        
+        if (mounted) {
+          setUser(initialUser);
+          if (initialUser) {
+            const role = await checkRole(initialUser.id);
+            if (mounted) setRole(role);
+          } else {
+            if (mounted) setRole(null);
+          }
+        }
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const newUser = session?.user || null;
-      setUser(newUser);
+      console.debug('Auth state change:', event, newUser?.email);
       
       if (newUser) {
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', newUser.id)
-          .single();
-        setRole(roleData?.role || 'viewer');
+        setUser(newUser);
+        const role = await checkRole(newUser.id);
+        if (mounted) {
+          setRole(role);
+          setLoading(false);
+          console.debug('Role updated from event:', role);
+        }
       } else {
-        setRole(null);
+        if (mounted) {
+          setUser(null);
+          setRole(null);
+          setLoading(false);
+        }
       }
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, [supabase]);
 
   const signOut = async () => {
@@ -70,8 +115,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = '/';
   };
 
+  // UI should only be unlocked when we have both user (if any) and their role resolved
+  const isActuallyLoading = loading || (!!user && role === null);
+
   return (
-    <AuthContext.Provider value={{ user, role, loading, signOut }}>
+    <AuthContext.Provider value={{ user, role, loading: isActuallyLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { LayoutDashboard, FileText, Settings, Search, LogOut, User as UserIcon, Menu, X } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, Search, LogOut, User as UserIcon, Menu, X, FolderOpen, Clock, Camera } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { usePathname } from 'next/navigation';
@@ -9,11 +9,13 @@ import { usePathname } from 'next/navigation';
 const Header = () => {
   const { user, role, signOut, loading } = useAuth();
   const pathname = usePathname();
-  const [isMounted, setIsMounted] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const isMounted = React.useRef(false);
+  const [, setReRender] = React.useState({});
 
   React.useEffect(() => {
-    setIsMounted(true);
+    isMounted.current = true;
+    setReRender({});
   }, []);
 
   // Fechar menu ao mudar de rota
@@ -21,18 +23,29 @@ const Header = () => {
     setIsMenuOpen(false);
   }, [pathname]);
 
-  // Se não estiver montado no cliente, renderize o esqueleto (SSR-safe)
-  if (!isMounted) return <div className="h-20" />;
+  // Se estiver em uma rota de admin, não mostramos o header padrão
+  const isAdminPage = pathname?.startsWith('/admin');
+  if (isAdminPage) return null;
 
-  // Se estiver na página de login, mostramos um header simplificado ou nada
+  // Se for SSR ou primeira renderização, retornamos o esqueleto fixo
+  if (!isMounted.current) return <div className="h-20 w-full border-b border-ghost-border" />;
+
   const isLoginPage = pathname === '/';
 
-  if (loading && !isLoginPage) return <div className="h-20" />;
+  // Skeleton UI apenas se ainda estiver carregando a auth e NÃO estiver na landing
+  if (loading && !isLoginPage) {
+    return (
+      <div className="h-20 w-full flex items-center px-6 animate-pulse border-b border-ghost-border bg-white">
+        <div className="w-10 h-10 bg-surface-low rounded-architectural mr-3" />
+        <div className="h-4 w-32 bg-surface-low rounded-architectural" />
+      </div>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full glass border-b border-ghost-border transition-all duration-300">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4 lg:gap-8">
           <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-3 group">
             <div className="w-10 h-10 bg-primary rounded-architectural flex items-center justify-center text-white transition-transform group-hover:scale-105 shadow-sm">
               <LayoutDashboard size={20} />
@@ -53,15 +66,33 @@ const Header = () => {
               </Link>
               <Link 
                 href="/expenses" 
-                className={`px-4 py-2 text-sm font-body rounded-architectural transition-colors ${pathname === '/expenses' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/expenses' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
               >
-                Extrato de Obra
+                Extrato
               </Link>
               <Link 
                 href="/dashboard/balanco" 
-                className={`px-4 py-2 text-sm font-body rounded-architectural transition-colors ${pathname === '/dashboard/balanco' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/dashboard/balanco' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
               >
                 Balanço
+              </Link>
+              <Link 
+                href="/project/documents" 
+                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/project/documents' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+              >
+                Documentos
+              </Link>
+              <Link 
+                href="/project/timeline" 
+                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/project/timeline' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+              >
+                Etapas
+              </Link>
+              <Link 
+                href="/project/evolution" 
+                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/project/evolution' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+              >
+                Diário
               </Link>
             </nav>
           )}
@@ -71,25 +102,14 @@ const Header = () => {
           {user && !isLoginPage && (
             <>
               {/* Desktop Search */}
-              <div className="relative hidden lg:block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary opacity-40" size={16} />
+              <div className="relative hidden xl:block">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary opacity-40 group-focus-within:text-primary transition-colors" size={16} />
                 <input 
                   type="text" 
                   placeholder="Buscar..." 
-                  className="bg-surface-low border-none rounded-architectural pl-10 pr-4 py-2 text-sm lg:w-64 focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                  className="bg-surface-low border-none rounded-architectural pl-10 pr-4 py-2 text-sm w-48 focus:w-64 focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                 />
               </div>
-              
-              {/* Admin Area Shortcut (Desktop) */}
-              {role === 'admin' && (
-                <Link 
-                  href="/admin/expenses" 
-                  className="hidden md:flex w-10 h-10 items-center justify-center text-tertiary hover:bg-surface-low rounded-architectural transition-colors"
-                  title="Configurações Admin"
-                >
-                  <Settings size={20} />
-                </Link>
-              )}
               
               <div className="hidden sm:block h-8 w-[1px] bg-ghost-border mx-2" />
               
@@ -125,9 +145,17 @@ const Header = () => {
           )}
 
           {!user && !isLoginPage && (
-             <Link href="/" className="bg-primary text-white px-5 py-2.5 rounded-architectural text-sm font-body hover:bg-primary-container transition-all">
-               Login
-             </Link>
+            <div className="flex items-center gap-4">
+              <Link 
+                href="/project/documents" 
+                className="text-tertiary hover:text-primary transition-colors text-sm font-body hidden md:block"
+              >
+                Documentos do Projeto
+              </Link>
+              <Link href="/" className="bg-primary text-white px-5 py-2.5 rounded-architectural text-sm font-body hover:bg-primary-container transition-all">
+                Login
+              </Link>
+            </div>
           )}
         </div>
       </div>
@@ -151,11 +179,32 @@ const Header = () => {
               Extrato de Obra
             </Link>
             <Link 
+              href="/project/documents" 
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-body transition-colors ${pathname === '/project/documents' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-surface-low'}`}
+            >
+              <FolderOpen size={20} />
+              Documentos do Projeto
+            </Link>
+            <Link 
               href="/dashboard/balanco" 
               className={`flex items-center gap-4 p-4 rounded-architectural text-base font-body transition-colors ${pathname === '/dashboard/balanco' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-surface-low'}`}
             >
               <Settings size={20} className="rotate-90" />
               Balanço Financeiro
+            </Link>
+            <Link 
+              href="/project/timeline" 
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-body transition-colors ${pathname === '/project/timeline' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-surface-low'}`}
+            >
+              <Clock size={20} />
+              Cronograma de Obra
+            </Link>
+            <Link 
+              href="/project/evolution" 
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-body transition-colors ${pathname === '/project/evolution' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-surface-low'}`}
+            >
+              <Camera size={20} />
+              Diário de Obra (Fotos)
             </Link>
 
             {role === 'admin' && (

@@ -23,16 +23,15 @@ export async function PUT(
 
   try {
     const body = await request.json()
-    const { title, description, phase_date, status, order_index } = body
+    const { title, description, date, image_url } = body
 
-    const { data: updatedPhase, error } = await supabase
-      .from('project_phases')
+    const { data: updatedUpdate, error } = await supabase
+      .from('project_updates')
       .update({
         title,
         description,
-        phase_date,
-        status,
-        order_index
+        date,
+        image_url
       })
       .eq('id', id)
       .select()
@@ -40,7 +39,7 @@ export async function PUT(
 
     if (error) throw error
 
-    return NextResponse.json(updatedPhase)
+    return NextResponse.json(updatedUpdate)
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
@@ -67,7 +66,7 @@ export async function DELETE(
   }
 
   const { error } = await supabase
-    .from('project_phases')
+    .from('project_updates')
     .delete()
     .eq('id', id)
 

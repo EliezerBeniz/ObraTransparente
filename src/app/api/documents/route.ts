@@ -5,9 +5,9 @@ export async function GET() {
   const supabase = await createClient()
   
   const { data, error } = await supabase
-    .from('project_settings')
+    .from('project_documents')
     .select('*')
-    .single()
+    .order('created_at', { ascending: false })
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -16,12 +16,15 @@ export async function GET() {
   return NextResponse.json(data)
 }
 
-export async function PATCH(request: Request) {
+export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
+  // Verify Admin Role
   const { data: roleData } = await supabase
     .from('user_roles')
     .select('role')
@@ -34,25 +37,32 @@ export async function PATCH(request: Request) {
 
   try {
     const body = await request.json()
-    // Extract only allow-listed fields
-    const { project_name, total_budget, completion_percentage, current_stage } = body
+    const { title, category, file_url, version, description } = body
 
-    const { data: updatedSettings, error } = await supabase
-      .from('project_settings')
-      .update({
-        project_name,
-        total_budget,
-        completion_percentage,
-        current_stage,
-        updated_at: new Date().toISOString()
+    if (!title || !file_url) {
+      return NextResponse.json({ error: 'Título e URL são obrigatórios.' }, { status: 400 })
+    }
+
+    // URL Validation (must be external links, ideally Google/cloud)
+    if (!/^https?:\/\//.test(file_url)) {
+      return NextResponse.json({ error: 'Link inválido. Deve ser uma URL completa (http/https).' }, { status: 400 })
+    }
+
+    const { data, error } = await supabase
+      .from('project_documents')
+      .insert({
+        title,
+        category,
+        file_url,
+        version,
+        description
       })
-      .eq('id', body.id || (await supabase.from('project_settings').select('id').single()).data?.id)
       .select()
       .single()
 
     if (error) throw error
 
-    return NextResponse.json(updatedSettings)
+    return NextResponse.json(data, { status: 201 })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

@@ -7,7 +7,8 @@ export async function GET() {
   const { data, error } = await supabase
     .from('project_phases')
     .select('*')
-    .order('phase_date', { ascending: false })
+    .order('order_index', { ascending: true })
+    .order('phase_date', { ascending: true })
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -34,14 +35,23 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { title, description, phase_date } = body
+    const { title, description, phase_date, status, order_index } = body
+    
+    // Auto-calculating order if missing (put at end)
+    let finalOrder = order_index
+    if (finalOrder === undefined) {
+      const { data: countData } = await supabase.from('project_phases').select('id')
+      finalOrder = (countData?.length || 0) + 1
+    }
 
     const { data: newPhase, error } = await supabase
       .from('project_phases')
       .insert({
         title,
         description,
-        phase_date
+        phase_date,
+        status: status || 'planned',
+        order_index: finalOrder
       })
       .select()
       .single()

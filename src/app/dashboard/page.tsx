@@ -47,7 +47,12 @@ export default function Dashboard() {
   const totalBudget = settings?.total_budget || 0; 
   const projectName = settings?.project_name || 'Projeto';
   const progress = settings?.completion_percentage || 0;
-  const currentStage = phases.length > 0 ? phases[0].title : 'Planejamento Inicial';
+  
+  // Encontrar a fase atual baseada no status 'in_progress' ou na última concluída
+  const activePhase = phases.find(p => p.status === 'in_progress') || 
+                      phases.filter(p => p.status === 'completed').sort((a,b) => b.order_index - a.order_index)[0];
+                      
+  const currentStage = activePhase?.title || settings?.current_stage || 'Planejamento Inicial';
   const totalInvested = expenses
     .filter(e => e.status === 'Pago')
     .reduce((acc, curr) => acc + curr.amount, 0);
@@ -107,6 +112,20 @@ export default function Dashboard() {
             <h3 className="text-2xl font-heading text-foreground tracking-tight">{stat.value}</h3>
           </div>
         ))}
+        
+        {/* Evolution Quick Link (New) */}
+        <Link href="/project/evolution" className="bg-primary/5 p-8 rounded-architectural border border-primary/20 transition-all hover:translate-y-[-4px] hover:shadow-md group flex flex-col justify-between">
+           <div className="flex justify-between items-start">
+              <div className="p-3 rounded-architectural bg-primary text-white">
+                <Clock size={24} />
+              </div>
+              <ExternalLink size={16} className="text-primary opacity-60" />
+           </div>
+           <div>
+              <p className="text-xs font-body text-primary uppercase tracking-wider mb-1">Diário de Obra</p>
+              <h3 className="text-lg font-heading text-foreground tracking-tight">Ver Fotos da Evolução</h3>
+           </div>
+        </Link>
       </div>
 
       {/* Content Grid */}
@@ -184,6 +203,9 @@ export default function Dashboard() {
             <Clock size={20} className="text-secondary" />
           </div>
           <h3 className="text-xl font-heading text-foreground">Linha do Tempo da Obra</h3>
+          <Link href="/project/timeline" className="text-xs font-body text-primary hover:underline ml-auto flex items-center gap-1 uppercase tracking-wider">
+             Ver Cronograma Completo <ChevronRight size={14} />
+          </Link>
         </div>
 
         <div className="relative space-y-8 before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-ghost-border">

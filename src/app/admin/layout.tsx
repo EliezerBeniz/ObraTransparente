@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, LogOut, FileText, Settings, Users } from 'lucide-react';
+import { LayoutDashboard, LogOut, FileText, Settings, Users, Store, FolderOpen, Clock, Camera } from 'lucide-react';
+
 import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function AdminLayout({
@@ -11,30 +12,24 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { user, role, signOut, loading } = useAuth();
   const router = useRouter();
-  const { user, role, loading: authLoading, signOut } = useAuth();
 
   useEffect(() => {
-    if (!authLoading && (!user || role !== 'admin')) {
+    if (!loading && (!user || role !== 'admin')) {
       router.push('/');
     }
-  }, [user, role, authLoading, router]);
+  }, [user, role, loading, router]);
 
-  if (authLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <div className="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
 
-  if (!user || role !== 'admin') {
-    return null;
-  }
-
-  const handleLogout = async () => {
-    await signOut();
-  };
+  if (!user || role !== 'admin') return null;
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -55,25 +50,85 @@ export default function AdminLayout({
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
           <Link
             href="/admin/expenses"
-            className="flex items-center gap-3 px-4 py-3 text-sm font-body text-foreground bg-surface-low rounded-architectural transition-colors"
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
+              typeof window !== 'undefined' && window.location.pathname === '/admin/expenses' 
+                ? 'bg-surface-low text-foreground' 
+                : 'text-tertiary hover:bg-surface-low'
+            }`}
           >
             <FileText size={18} className="text-primary" />
             Gerenciar Despesas
           </Link>
 
           <Link
+            href="/admin/suppliers"
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
+              typeof window !== 'undefined' && window.location.pathname === '/admin/suppliers' 
+                ? 'bg-surface-low text-foreground' 
+                : 'text-tertiary hover:bg-surface-low'
+            }`}
+          >
+            <Store size={18} />
+            Fornecedores
+          </Link>
+
+          <Link
+            href="/admin/documents"
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
+              typeof window !== 'undefined' && window.location.pathname === '/admin/documents' 
+                ? 'bg-surface-low text-foreground' 
+                : 'text-tertiary hover:bg-surface-low'
+            }`}
+          >
+            <FolderOpen size={18} />
+            Documentos do Projeto
+          </Link>
+
+          <Link
             href="/admin/socios"
-            className="flex items-center gap-3 px-4 py-3 text-sm font-body text-tertiary hover:bg-surface-low rounded-architectural transition-colors"
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
+              typeof window !== 'undefined' && window.location.pathname === '/admin/socios' 
+                ? 'bg-surface-low text-foreground' 
+                : 'text-tertiary hover:bg-surface-low'
+            }`}
           >
             <Users size={18} />
             Sócios e Permissões
           </Link>
           <Link
+            href="/admin/timeline"
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
+              typeof window !== 'undefined' && window.location.pathname === '/admin/timeline' 
+                ? 'bg-surface-low text-foreground' 
+                : 'text-tertiary hover:bg-surface-low'
+            }`}
+          >
+            <Clock size={18} />
+            Cronograma (Etapas)
+          </Link>
+
+          <Link
+            href="/admin/evolution"
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
+              typeof window !== 'undefined' && window.location.pathname === '/admin/evolution' 
+                ? 'bg-surface-low text-foreground' 
+                : 'text-tertiary hover:bg-surface-low'
+            }`}
+          >
+            <Camera size={18} />
+            Diário de Obra (Fotos)
+          </Link>
+
+          <Link
             href="/admin/settings"
-            className="flex items-center gap-3 px-4 py-3 text-sm font-body text-tertiary hover:bg-surface-low rounded-architectural transition-colors"
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
+              typeof window !== 'undefined' && window.location.pathname === '/admin/settings' 
+                ? 'bg-surface-low text-foreground' 
+                : 'text-tertiary hover:bg-surface-low'
+            }`}
           >
             <Settings size={18} />
-            Configurações
+            Configurações Projeto
           </Link>
         </nav>
 
@@ -85,7 +140,7 @@ export default function AdminLayout({
             ← Voltar ao Início
           </Link>
           <button
-            onClick={handleLogout}
+            onClick={signOut}
             className="flex items-center gap-3 px-4 py-3 text-sm font-heading text-red-500 hover:bg-red-50 rounded-architectural transition-all w-full border border-transparent hover:border-red-100"
           >
             <LogOut size={18} />

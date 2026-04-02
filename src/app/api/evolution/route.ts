@@ -5,9 +5,9 @@ export async function GET() {
   const supabase = await createClient()
   
   const { data, error } = await supabase
-    .from('project_settings')
+    .from('project_updates')
     .select('*')
-    .single()
+    .order('date', { ascending: false })
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -16,7 +16,7 @@ export async function GET() {
   return NextResponse.json(data)
 }
 
-export async function PATCH(request: Request) {
+export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -34,25 +34,26 @@ export async function PATCH(request: Request) {
 
   try {
     const body = await request.json()
-    // Extract only allow-listed fields
-    const { project_name, total_budget, completion_percentage, current_stage } = body
+    const { title, description, date, image_url } = body
 
-    const { data: updatedSettings, error } = await supabase
-      .from('project_settings')
-      .update({
-        project_name,
-        total_budget,
-        completion_percentage,
-        current_stage,
-        updated_at: new Date().toISOString()
+    if (!title || !image_url) {
+      return NextResponse.json({ error: 'Título e URL da imagem são obrigatórios.' }, { status: 400 })
+    }
+
+    const { data: newUpdate, error } = await supabase
+      .from('project_updates')
+      .insert({
+        title,
+        description,
+        date: date || new Date().toISOString().split('T')[0],
+        image_url
       })
-      .eq('id', body.id || (await supabase.from('project_settings').select('id').single()).data?.id)
       .select()
       .single()
 
     if (error) throw error
 
-    return NextResponse.json(updatedSettings)
+    return NextResponse.json(newUpdate)
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
