@@ -1,6 +1,7 @@
+import { type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
-export async function middleware(request: Request) {
+export async function middleware(request: NextRequest) {
   // Use edge runtime for middleware
   return await updateSession(request)
 }
