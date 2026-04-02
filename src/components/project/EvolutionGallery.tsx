@@ -50,19 +50,19 @@ export default function EvolutionGallery({ updates }: EvolutionGalleryProps) {
           </div>
 
           {/* Content */}
-          <div className="p-5">
-            <div className="flex items-center justify-between mb-2">
-               <span className="text-[10px] font-heading uppercase tracking-widest text-tertiary">
+          <div className="p-3 md:p-4">
+            <div className="flex items-center justify-between mb-1.5 md:mb-2">
+               <span className="text-[9px] md:text-[10px] font-heading uppercase tracking-widest text-tertiary">
                 {format(new Date(update.date), "dd 'de' MMMM yyyy", { locale: ptBR })}
               </span>
             </div>
             
-            <h3 className="text-lg font-heading font-bold text-foreground mb-2 leading-tight">
+            <h3 className="text-base md:text-lg font-heading font-bold text-foreground mb-1.5 md:mb-2 leading-tight">
               {update.title}
             </h3>
             
             {update.description && (
-              <p className="text-sm text-secondary font-body line-clamp-3">
+              <p className="text-xs md:text-sm text-secondary font-body line-clamp-3">
                 {update.description}
               </p>
             )}

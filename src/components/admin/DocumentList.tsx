@@ -75,13 +75,13 @@ export function DocumentList({ documents, onEdit, onDelete, isAdmin }: DocumentL
           </div>
 
           {/* Info Area */}
-          <div className="p-5 flex-1 flex flex-col">
+          <div className="p-3 md:p-4 flex-1 flex flex-col">
             <div className="flex justify-between gap-3 mb-2">
-              <h3 className="text-sm font-heading text-foreground line-clamp-2 leading-relaxed h-10">{doc.title}</h3>
+              <h3 className="text-sm md:text-base font-heading text-foreground line-clamp-2 leading-relaxed min-h-[2.5rem] md:min-h-0">{doc.title}</h3>
             </div>
             
             {doc.description && (
-              <p className="text-[11px] font-body text-tertiary line-clamp-2 mb-4 h-8 leading-relaxed">
+              <p className="text-[11px] md:text-xs font-body text-tertiary line-clamp-2 mb-4 h-8 leading-relaxed">
                 {doc.description}
               </p>
             )}

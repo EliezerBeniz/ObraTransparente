@@ -162,74 +162,88 @@ const Header = () => {
 
       {/* Mobile Drawer */}
       {isMenuOpen && user && (
-        <div className="md:hidden absolute top-[80px] left-0 w-full h-[calc(100vh-80px)] bg-background/95 backdrop-blur-md z-40 animate-in fade-in slide-in-from-top-4 duration-300">
-          <nav className="flex flex-col p-6 gap-2">
+        <div className="md:hidden absolute top-[80px] left-0 w-full h-[calc(100vh-80px)] bg-background/95 backdrop-blur-md z-40 animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col">
+          <nav className="flex-1 overflow-y-auto p-6 flex flex-col gap-1.5">
             <Link 
               href="/dashboard" 
-              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-body transition-colors ${pathname === '/dashboard' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-surface-low'}`}
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/dashboard' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
             >
-              <LayoutDashboard size={20} />
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/dashboard' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                <LayoutDashboard size={18} />
+              </div>
               Dashboard
             </Link>
             <Link 
               href="/expenses" 
-              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-body transition-colors ${pathname === '/expenses' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-surface-low'}`}
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/expenses' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
             >
-              <FileText size={20} />
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/expenses' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                <FileText size={18} />
+              </div>
               Extrato de Obra
             </Link>
             <Link 
               href="/project/documents" 
-              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-body transition-colors ${pathname === '/project/documents' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-surface-low'}`}
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/documents' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
             >
-              <FolderOpen size={20} />
-              Documentos do Projeto
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/project/documents' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                <FolderOpen size={18} />
+              </div>
+              Documentos
             </Link>
             <Link 
               href="/dashboard/balanco" 
-              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-body transition-colors ${pathname === '/dashboard/balanco' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-surface-low'}`}
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/dashboard/balanco' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
             >
-              <Settings size={20} className="rotate-90" />
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/dashboard/balanco' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                <Settings size={18} className="rotate-90" />
+              </div>
               Balanço Financeiro
             </Link>
             <Link 
               href="/project/timeline" 
-              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-body transition-colors ${pathname === '/project/timeline' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-surface-low'}`}
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/timeline' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
             >
-              <Clock size={20} />
-              Cronograma de Obra
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/project/timeline' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                <Clock size={18} />
+              </div>
+              Etapas da Obra
             </Link>
             <Link 
               href="/project/evolution" 
-              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-body transition-colors ${pathname === '/project/evolution' ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-surface-low'}`}
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/evolution' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
             >
-              <Camera size={20} />
-              Diário de Obra (Fotos)
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/project/evolution' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                <Camera size={18} />
+              </div>
+              Diário de Obra
             </Link>
 
             {role === 'admin' && (
-              <div className="mt-4 pt-4 border-t border-ghost-border">
-                <p className="text-[10px] font-heading text-tertiary uppercase tracking-widest mb-2 px-4">Administração</p>
+              <div className="mt-4 pt-4 border-t border-ghost-border/50">
+                <p className="text-[10px] font-heading text-tertiary uppercase tracking-widest mb-3 px-4">Administração</p>
                 <Link 
                   href="/admin/expenses" 
-                  className={`flex items-center gap-4 p-4 rounded-architectural text-base font-body transition-colors ${pathname.startsWith('/admin') ? 'bg-primary/10 text-primary font-bold' : 'text-foreground hover:bg-surface-low'}`}
+                  className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname.startsWith('/admin') ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
                 >
-                  <Settings size={20} />
-                  Área do Administrador
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname.startsWith('/admin') ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                    <Settings size={18} />
+                  </div>
+                  Painel Administrativo
                 </Link>
               </div>
             )}
-
-            <div className="mt-auto mb-10 pt-4 border-t border-ghost-border">
-               <button 
-                onClick={signOut}
-                className="w-full h-14 flex items-center justify-center gap-3 bg-red-50 text-red-600 rounded-architectural font-heading text-sm active:scale-[0.98] transition-all"
-               >
-                 <LogOut size={18} />
-                 Sair da Conta
-               </button>
-            </div>
           </nav>
+          
+          <div className="p-6 border-t border-ghost-border/50 bg-surface-low/30">
+             <button 
+              onClick={signOut}
+              className="w-full h-14 flex items-center justify-center gap-3 bg-white text-red-500 border border-red-100 rounded-architectural font-heading text-sm font-bold active:scale-[0.98] transition-all shadow-sm"
+             >
+               <LogOut size={18} />
+               Encerrar Sessão
+             </button>
+          </div>
         </div>
       )}
     </header>

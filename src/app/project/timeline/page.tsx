@@ -22,16 +22,12 @@ export default function TimelinePage() {
   }, [])
 
   return (
-    <div className="max-w-5xl mx-auto py-12 px-6">
-      <div className="mb-12 text-center md:text-left">
-        <div className="flex items-center gap-3 justify-center md:justify-start mb-4">
-          <div className="w-12 h-12 rounded-architectural bg-primary/10 text-primary flex items-center justify-center">
-            <Calendar size={28} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-heading font-black text-foreground tracking-tight">Cronograma de Obra</h1>
-            <p className="text-tertiary font-body">Acompanhe as fases planejadas e o progresso real da construção.</p>
-          </div>
+    <div className="space-y-8 md:space-y-12">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 text-center md:text-left">
+        <div className="space-y-2 w-full">
+          <h1 className="text-2xl md:text-3xl font-heading font-black text-foreground tracking-tight">Cronograma de Obra</h1>
+          <p className="text-xs md:text-sm text-tertiary font-body">Acompanhe as fases planejadas e o progresso real da construção.</p>
         </div>
       </div>
 

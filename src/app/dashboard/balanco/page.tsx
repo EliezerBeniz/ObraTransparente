@@ -70,23 +70,23 @@ export default function BalancoPage() {
   return (
     <div className="space-y-10 animate-[fadeIn_0.4s_ease-out]">
       {/* Header Stat Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-surface-lowest p-8 rounded-architectural border border-ghost-border shadow-sm flex items-center justify-between group">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div className="bg-surface-lowest p-6 md:p-8 rounded-architectural border border-ghost-border shadow-sm flex items-center justify-between group">
           <div>
             <p className="text-[10px] uppercase tracking-widest text-tertiary mb-1 font-bold">Investimento Total na Obra</p>
-            <h2 className="text-3xl font-heading text-foreground tabular-nums">{formatCurrency(balance.totalProject)}</h2>
+            <h2 className="text-2xl md:text-3xl font-heading text-foreground tabular-nums">{formatCurrency(balance.totalProject)}</h2>
           </div>
-          <div className="p-4 bg-primary/10 text-primary rounded-architectural group-hover:bg-primary group-hover:text-white transition-all">
-            <TrendingUp size={28} />
+          <div className="p-3 md:p-4 bg-primary/10 text-primary rounded-architectural group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+            <TrendingUp size={24} />
           </div>
         </div>
-        <div className="bg-surface-lowest p-8 rounded-architectural border border-ghost-border shadow-sm flex items-center justify-between group">
+        <div className="bg-surface-lowest p-6 md:p-8 rounded-architectural border border-ghost-border shadow-sm flex items-center justify-between group">
           <div>
             <p className="text-[10px] uppercase tracking-widest text-tertiary mb-1 font-bold">Cota Ideal por Sócio</p>
-            <h2 className="text-3xl font-heading text-secondary tabular-nums">{formatCurrency(balance.avgPerSocio)}</h2>
+            <h2 className="text-2xl md:text-3xl font-heading text-secondary tabular-nums">{formatCurrency(balance.avgPerSocio)}</h2>
           </div>
-          <div className="p-4 bg-secondary/10 text-secondary rounded-architectural group-hover:bg-secondary group-hover:text-white transition-all">
-            <PiggyBank size={28} />
+          <div className="p-3 md:p-4 bg-secondary/10 text-secondary rounded-architectural group-hover:bg-secondary group-hover:text-white transition-all shrink-0">
+            <PiggyBank size={24} />
           </div>
         </div>
       </section>
@@ -101,19 +101,19 @@ export default function BalancoPage() {
 
           <div className="grid grid-cols-1 gap-4">
             {balance.socioBalances.map((socio) => (
-              <div key={socio.id} className="bg-surface-lowest p-6 rounded-architectural border border-ghost-border shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-4">
+              <div key={socio.id} className="bg-surface-lowest p-5 md:p-6 rounded-architectural border border-ghost-border shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <div className="flex items-center gap-3">
                     <div className={`p-2 rounded-full ${socio.net >= 0 ? 'bg-secondary/10 text-secondary' : 'bg-primary/10 text-primary'}`}>
                       {socio.net >= 0 ? <ArrowUpCircle size={18} /> : <ArrowDownCircle size={18} />}
                     </div>
                     <div>
-                      <h4 className="font-heading text-foreground">{socio.name}</h4>
+                      <h4 className="font-heading text-foreground text-sm md:text-base">{socio.name}</h4>
                       <p className="text-[10px] text-tertiary uppercase font-bold tracking-tight">Investimento Individual</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className={`text-sm font-heading ${socio.net >= 0 ? 'text-secondary' : 'text-primary'}`}>
+                  <div className="w-full sm:w-auto text-left sm:text-right pt-3 sm:pt-0 border-t sm:border-t-0 border-ghost-border/50">
+                    <p className={`text-sm md:text-base font-heading ${socio.net >= 0 ? 'text-secondary' : 'text-primary'}`}>
                       {socio.net >= 0 ? '+' : ''}{formatCurrency(socio.net)}
                     </p>
                     <p className="text-[10px] text-tertiary uppercase font-bold tracking-tight">Saldo Final</p>
