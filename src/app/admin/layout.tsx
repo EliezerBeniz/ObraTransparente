@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LayoutDashboard, LogOut, FileText, Settings, Users } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function AdminLayout({
   children,
@@ -12,34 +12,29 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const supabase = createClient();
-  const [checking, setChecking] = useState(true);
+  const { user, role, loading: authLoading, signOut } = useAuth();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/');
-      } else {
-        setChecking(false);
-      }
-    };
-    checkAuth();
-  }, [router, supabase]);
+    if (!authLoading && (!user || role !== 'admin')) {
+      router.push('/');
+    }
+  }, [user, role, authLoading, router]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.refresh();
-    router.push('/');
-  };
-
-  if (checking) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
+
+  if (!user || role !== 'admin') {
+    return null;
+  }
+
+  const handleLogout = async () => {
+    await signOut();
+  };
 
   return (
     <div className="min-h-screen flex bg-background">

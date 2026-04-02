@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { LayoutDashboard, Lock, Eye, EyeOff, MailCheck } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+
 import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
-  const router = useRouter();
+
   const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -31,9 +31,10 @@ export default function LoginPage() {
       return;
     }
 
-    // Refresh router to ensure middleware picks up the new cookie
-    router.refresh();
-    router.push('/dashboard');
+    // Full page navigation ensures cookies are sent on the next request.
+    // router.push() on iOS/Safari can fire before cookies propagate,
+    // causing the middleware to redirect back to "/" in a loop.
+    window.location.href = '/dashboard';
   };
 
   const handleResetPassword = async () => {

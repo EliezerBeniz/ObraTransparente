@@ -65,8 +65,14 @@ create policy "Admin check for attachments"
 create function public.handle_new_user()
 returns trigger as $$
 begin
+  -- 1. Criar o perfil PRIMEIRO (profiles.id é referenciado por user_roles.user_id)
+  insert into public.profiles (id, full_name)
+  values (new.id, coalesce(new.raw_user_meta_data->>'full_name', new.email));
+
+  -- 2. Depois criar a role (que depende de profiles.id existir)
   insert into public.user_roles (user_id, role)
-  values (new.id, 'admin'); -- Defaulting to admin for MVP
+  values (new.id, 'admin');
+
   return new;
 end;
 $$ language plpgsql security definer;
