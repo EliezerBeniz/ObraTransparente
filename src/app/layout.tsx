@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
 import SafeHeader from "@/components/SafeHeader";
@@ -13,9 +13,19 @@ const manrope = Manrope({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#1e3a8a",
+};
+
 export const metadata: Metadata = {
   title: "Transparência Construção | MVP",
   description: "Plataforma de transparência financeira para projetos de construção civil.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Transparência",
+  },
 };
 
 import { AuthProvider } from "@/components/providers/AuthProvider";

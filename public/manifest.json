@@ -1,0 +1,22 @@
+{
+  "name": "Transparência Construção Civil",
+  "short_name": "Transparência",
+  "description": "Plataforma de transparência financeira para projetos de construção civil.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e3a8a",
+  "theme_color": "#1e3a8a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

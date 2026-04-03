@@ -27,11 +27,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const timeoutId = setTimeout(() => {
       if (mounted) {
         setLoading(false);
-        console.debug('Auth loading safety timeout reached');
+        if (role === null && user) {
+          setRole('viewer');
+          console.debug('Auth loading safety timeout: defaulting to viewer');
+        }
       }
     }, 3000);
 
     const checkRole = async (userId: string) => {
+      console.debug('Checking role for user:', userId);
       try {
         const { data, error } = await supabase
           .from('user_roles')
@@ -39,19 +43,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .eq('user_id', userId);
         
         if (error) {
-          console.warn('Role fetch error:', error);
+          console.error('Role fetch error:', error);
           return 'viewer';
         }
 
-        const userRole = data?.[0]?.role?.trim()?.toLowerCase();
-        console.debug('Resolved role for', userId, ':', userRole);
-        
-        // Expondo para debug global (opcional)
-        if (typeof window !== 'undefined') {
-          (window as any)._last_role = userRole;
-          (window as any)._last_user = userId;
+        if (!data || data.length === 0) {
+          console.warn('No role mapping found for user:', userId);
+          return 'viewer';
         }
 
+        const userRole = data[0].role?.trim()?.toLowerCase();
+        console.debug('Resolved role for', userId, ':', userRole);
+        
         return (userRole === 'admin') ? 'admin' : 'viewer';
       } catch (err) {
         console.error('CheckRole critical failure:', err);
@@ -115,11 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = '/';
   };
 
-  // UI should only be unlocked when we have both user (if any) and their role resolved
-  const isActuallyLoading = loading || (!!user && role === null);
-
   return (
-    <AuthContext.Provider value={{ user, role, loading: isActuallyLoading, signOut }}>
+    <AuthContext.Provider value={{ user, role, loading: loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

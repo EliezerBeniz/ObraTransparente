@@ -9,13 +9,11 @@ import { usePathname } from 'next/navigation';
 const Header = () => {
   const { user, role, signOut, loading } = useAuth();
   const pathname = usePathname();
+  const [isMounted, setIsMounted] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const isMounted = React.useRef(false);
-  const [, setReRender] = React.useState({});
 
   React.useEffect(() => {
-    isMounted.current = true;
-    setReRender({});
+    setIsMounted(true);
   }, []);
 
   // Fechar menu ao mudar de rota
@@ -24,23 +22,14 @@ const Header = () => {
   }, [pathname]);
 
   // Se estiver em uma rota de admin, não mostramos o header padrão
+  const isLoginPage = pathname === '/';
+
+  // Se estiver em uma rota de admin, não mostramos o header padrão
   const isAdminPage = pathname?.startsWith('/admin');
   if (isAdminPage) return null;
 
-  // Se for SSR ou primeira renderização, retornamos o esqueleto fixo
-  if (!isMounted.current) return <div className="h-20 w-full border-b border-ghost-border" />;
-
-  const isLoginPage = pathname === '/';
-
-  // Skeleton UI apenas se ainda estiver carregando a auth e NÃO estiver na landing
-  if (loading && !isLoginPage) {
-    return (
-      <div className="h-20 w-full flex items-center px-6 animate-pulse border-b border-ghost-border bg-white">
-        <div className="w-10 h-10 bg-surface-low rounded-architectural mr-3" />
-        <div className="h-4 w-32 bg-surface-low rounded-architectural" />
-      </div>
-    );
-  }
+  // Renderização comum (Servidor + Cliente) 
+  // O que for específico do usuário (botões, nav) será condicional ao isMounted
 
   return (
     <header className="sticky top-0 z-50 w-full glass border-b border-ghost-border transition-all duration-300">
@@ -56,7 +45,8 @@ const Header = () => {
             </div>
           </Link>
 
-          {user && !isLoginPage && (
+          {/* Navegação - Apenas se montado e tiver usuário */}
+          {isMounted && user && !isLoginPage && (
             <nav className="hidden md:flex items-center gap-1">
               <Link 
                 href="/dashboard" 
@@ -98,8 +88,8 @@ const Header = () => {
           )}
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4">
-          {user && !isLoginPage && (
+        <div className="flex items-center gap-2 sm:gap-4 min-w-[80px] justify-end">
+          {isMounted && user && !isLoginPage && (
             <>
               {/* Desktop Search */}
               <div className="relative hidden xl:block">
@@ -115,11 +105,15 @@ const Header = () => {
               
               {/* Account / Mobile Menu Trigger */}
               <div className="flex items-center gap-2 sm:gap-3">
-                {role === 'admin' && (
-                  <Link href="/admin/expenses" className="hidden lg:block bg-primary/10 text-primary px-4 py-2 rounded-architectural text-xs font-heading hover:bg-primary/20 transition-all">
+                {role === 'admin' ? (
+                  <Link href="/admin/expenses" className="hidden lg:block bg-primary/10 text-primary px-4 py-2 rounded-architectural text-xs font-heading hover:bg-primary/20 transition-all border border-primary/10 animate-in fade-in duration-300">
                     Área Admin
                   </Link>
-                )}
+                ) : role === null ? (
+                  <div className="hidden lg:flex items-center justify-center w-28 h-9 bg-surface-low rounded-architectural animate-pulse border border-ghost-border/50 text-[10px] text-tertiary/40 font-heading">
+                    Carregando...
+                  </div>
+                ) : null}
                 
                 <button 
                   onClick={signOut}
@@ -144,7 +138,7 @@ const Header = () => {
             </>
           )}
 
-          {!user && !isLoginPage && (
+          {isMounted && !user && !isLoginPage && (
             <div className="flex items-center gap-4">
               <Link 
                 href="/project/documents" 
@@ -161,7 +155,7 @@ const Header = () => {
       </div>
 
       {/* Mobile Drawer */}
-      {isMenuOpen && user && (
+      {isMounted && isMenuOpen && user && (
         <div className="md:hidden absolute top-[80px] left-0 w-full h-[calc(100vh-80px)] bg-background/95 backdrop-blur-md z-40 animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col">
           <nav className="flex-1 overflow-y-auto p-6 flex flex-col gap-1.5">
             <Link 
