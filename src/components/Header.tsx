@@ -213,7 +213,12 @@ const Header = () => {
               Diário de Obra
             </Link>
 
-            {role === 'admin' && (
+            {loading ? (
+              <div className="mt-4 pt-4 border-t border-ghost-border/50 px-4">
+                <div className="h-3 w-20 bg-surface-low rounded animate-pulse mb-3"></div>
+                <div className="h-14 w-full bg-surface-low rounded-architectural animate-pulse"></div>
+              </div>
+            ) : role === 'admin' ? (
               <div className="mt-4 pt-4 border-t border-ghost-border/50">
                 <p className="text-[10px] font-heading text-tertiary uppercase tracking-widest mb-3 px-4">Administração</p>
                 <Link 
@@ -226,7 +231,7 @@ const Header = () => {
                   Painel Administrativo
                 </Link>
               </div>
-            )}
+            ) : null}
           </nav>
           
           <div className="p-6 border-t border-ghost-border/50 bg-surface-low/30">
