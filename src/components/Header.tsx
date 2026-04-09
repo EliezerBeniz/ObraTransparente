@@ -105,14 +105,14 @@ const Header = () => {
               
               {/* Account / Mobile Menu Trigger */}
               <div className="flex items-center gap-2 sm:gap-3">
-                {role === 'admin' ? (
-                  <Link href="/admin/expenses" className="hidden lg:block bg-primary/10 text-primary px-4 py-2 rounded-architectural text-xs font-heading hover:bg-primary/20 transition-all border border-primary/10 animate-in fade-in duration-300">
-                    Área Admin
-                  </Link>
-                ) : role === null ? (
+                {loading ? (
                   <div className="hidden lg:flex items-center justify-center w-28 h-9 bg-surface-low rounded-architectural animate-pulse border border-ghost-border/50 text-[10px] text-tertiary/40 font-heading">
                     Carregando...
                   </div>
+                ) : role === 'admin' ? (
+                  <Link href="/admin/expenses" className="hidden lg:block bg-primary/10 text-primary px-4 py-2 rounded-architectural text-xs font-heading hover:bg-primary/20 transition-all border border-primary/10 animate-in fade-in duration-300">
+                    Área Admin
+                  </Link>
                 ) : null}
                 
                 <button 

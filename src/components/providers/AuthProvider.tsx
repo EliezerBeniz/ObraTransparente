@@ -23,16 +23,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
     
-    // Safety timeout: Unlock UI after 3 seconds even if Supabase hangs
+    // Safety timeout: Unlock UI and force role resolution if Supabase hangs
     const timeoutId = setTimeout(() => {
       if (mounted) {
         setLoading(false);
-        if (role === null && user) {
-          setRole('viewer');
-          console.debug('Auth loading safety timeout: defaulting to viewer');
-        }
+        setRole(prevRole => {
+          if (prevRole === null) {
+            console.debug('Auth loading safety timeout: defaulting to viewer');
+            return 'viewer';
+          }
+          return prevRole;
+        });
       }
-    }, 3000);
+    }, 4000);
 
     const checkRole = async (userId: string) => {
       console.debug('Checking role for user:', userId);
@@ -40,7 +43,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', userId);
+          .eq('user_id', userId)
+          .limit(1);
         
         if (error) {
           console.error('Role fetch error:', error);
@@ -80,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Auth initialization error:', err);
       } finally {
         if (mounted) setLoading(false);
+        clearTimeout(timeoutId);
       }
     }
 
@@ -114,8 +119,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/';
+    try {
+      // Create a timeout promise to ensure we don't hang if Supabase is unresponsive
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Sign out timeout')), 2000)
+      );
+      
+      // Clear all possible local storages and cookies immediately
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Execute sign out with a 2 second timeout
+      await Promise.race([
+        supabase.auth.signOut(),
+        timeoutPromise
+      ]);
+    } catch (error) {
+      console.error('Error during sign out (proceeding anyway):', error);
+    } finally {
+      // ALWAYS redirect, even if API fails or hangs
+      window.location.href = '/';
+    }
   };
 
   return (
