@@ -34,7 +34,13 @@ export function ExpenseForm({
   useEffect(() => {
     fetch('/api/socios')
       .then(res => res.json())
-      .then(data => setSocios(data))
+      .then(data => {
+        const filtered = data.filter((s: any) => {
+          const role = Array.isArray(s.user_roles) ? s.user_roles[0]?.role : s.user_roles?.role;
+          return role !== 'convidado';
+        });
+        setSocios(filtered);
+      })
       .catch(err => console.error('Error fetching socios:', err));
   }, []);
 

@@ -29,7 +29,11 @@ export default function BalancoPage() {
 
       if (expensesRes.ok && sociosRes.ok) {
         const expenses: ExpenseWithAttachments[] = await expensesRes.json();
-        const socios: Profile[] = await sociosRes.json();
+        const rawSocios: Profile[] = await sociosRes.json();
+        const socios = rawSocios.filter((s: any) => {
+          const role = Array.isArray(s.user_roles) ? s.user_roles[0]?.role : s.user_roles?.role;
+          return role !== 'convidado';
+        });
         const calculated = calculateProjectBalance(expenses, socios);
         setBalance(calculated);
       }

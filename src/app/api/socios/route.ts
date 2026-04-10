@@ -52,11 +52,11 @@ export async function POST(request: Request) {
     if (profileUpdateError) throw profileUpdateError
 
     // 3. O trigger handle_new_user() já insere como 'admin' por padrão.
-    // Se o administrador selecionou 'viewer', precisamos atualizar.
-    if (role === 'viewer') {
+    // Se o administrador selecionou 'viewer' ou 'convidado', precisamos atualizar.
+    if (role === 'viewer' || role === 'convidado') {
       const { error: roleChangeError } = await adminClient
         .from('user_roles')
-        .update({ role: 'viewer' })
+        .update({ role })
         .eq('user_id', user.id)
       
       if (roleChangeError) throw roleChangeError

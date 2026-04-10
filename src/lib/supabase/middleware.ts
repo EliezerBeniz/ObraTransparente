@@ -82,11 +82,15 @@ export async function updateSession(request: NextRequest) {
 
   // 3. Se ESTIVER logado mas NÃO for admin e tentar acessar /admin/*
   if (user && request.nextUrl.pathname.startsWith('/admin')) {
-      const { data: roleData } = await supabase
+      const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
         .single()
+      
+      if (roleError) {
+          console.error('[Middleware] Error fetch user_roles:', roleError)
+      }
       
       if (roleData?.role !== 'admin') {
           const url = request.nextUrl.clone()

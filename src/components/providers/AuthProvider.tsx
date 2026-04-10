@@ -6,7 +6,7 @@ import { User } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
-  role: 'admin' | 'viewer' | null;
+  role: 'admin' | 'viewer' | 'convidado' | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -15,10 +15,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<'admin' | 'viewer' | null>(null);
+  const [role, setRole] = useState<'admin' | 'viewer' | 'convidado' | null>(null);
   const [loading, setLoading] = useState(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const supabase = useMemo(() => createClient(), []);
+  
+  const [supabase] = useState(() => createClient());
 
   useEffect(() => {
     let mounted = true;
@@ -59,7 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userRole = data[0].role?.trim()?.toLowerCase();
         console.debug('Resolved role for', userId, ':', userRole);
         
-        return (userRole === 'admin') ? 'admin' : 'viewer';
+        if (userRole === 'admin') return 'admin';
+        if (userRole === 'convidado') return 'convidado';
+        return 'viewer';
       } catch (err) {
         console.error('CheckRole critical failure:', err);
         return 'viewer';
@@ -125,17 +127,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setTimeout(() => reject(new Error('Sign out timeout')), 2000)
       );
       
-      // Clear all possible local storages and cookies immediately
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Execute sign out with a 2 second timeout
+      // Execute sign out with a 2 second timeout FIRST
       await Promise.race([
         supabase.auth.signOut(),
         timeoutPromise
       ]);
+      
+      // Clear data only after
+      localStorage.clear();
+      sessionStorage.clear();
     } catch (error) {
       console.error('Error during sign out (proceeding anyway):', error);
+      localStorage.clear();
+      sessionStorage.clear();
     } finally {
       // ALWAYS redirect, even if API fails or hangs
       window.location.href = '/';

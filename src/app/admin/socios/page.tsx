@@ -206,6 +206,7 @@ export default function SociosPage() {
                 >
                   <option value="viewer">Observador (Viewer)</option>
                   <option value="admin">Administrador (Admin)</option>
+                  <option value="convidado">Convidado (Sem divisão de custos)</option>
                 </select>
               </div>
               
@@ -284,6 +285,7 @@ export default function SociosPage() {
                       >
                         <option value="admin">Administrador (Admin)</option>
                         <option value="viewer">Observador (Viewer)</option>
+                        <option value="convidado">Convidado</option>
                       </select>
                     ) : (
                       <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-low rounded-full">
@@ -291,6 +293,11 @@ export default function SociosPage() {
                           <>
                             <ShieldAlert size={12} className="text-primary" />
                             <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Admin</span>
+                          </>
+                        ) : socio.user_roles?.role === 'convidado' ? (
+                          <>
+                            <Users size={12} className="text-secondary" />
+                            <span className="text-[10px] font-bold text-secondary uppercase tracking-wider">Convidado</span>
                           </>
                         ) : (
                           <>
@@ -353,7 +360,9 @@ export default function SociosPage() {
             <p className="text-xs text-secondary/80 font-body mt-1 leading-relaxed">
               <strong>Administradores</strong> têm poder total para cadastrar, editar e excluir despesas, além de gerenciar a linha do tempo e outros membros.
               <br />
-              <strong>Observadores</strong> (Viewer) podem apenas visualizar o dashboard administrativo e ler os dados, sem permissão para realizar alterações.
+              <strong>Observadores</strong> (Viewer) podem apenas visualizar o dashboard administrativo e ler os dados.
+              <br />
+              <strong>Convidados</strong> podem visualizar os dados mas não entram na divisão de custos.
             </p>
           </div>
         </div>

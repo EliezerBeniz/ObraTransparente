@@ -1,6 +1,6 @@
 export interface UserRole {
   user_id: string;
-  role: 'admin' | 'viewer';
+  role: 'admin' | 'viewer' | 'convidado';
 }
 
 export interface Profile {

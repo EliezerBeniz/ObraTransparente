@@ -1,7 +1,8 @@
 -- 1. Create User Roles Table
 create table user_roles (
-  user_id uuid references auth.users not null primary key,
-  role text check (role in ('admin', 'viewer')) default 'viewer'
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+    role TEXT NOT NULL CHECK (role IN ('admin', 'viewer', 'convidado')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- 2. Create Expenses Table
