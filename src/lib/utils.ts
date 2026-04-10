@@ -37,3 +37,34 @@ export function getDirectDriveImageUrl(url: string) {
   
   return url;
 }
+
+export function exportToCSV(data: any[], filename: string) {
+  if (!data || !data.length) return;
+
+  // Header columns
+  const headers = ['Data', 'Categoria', 'Titulo', 'Status', 'Valor'];
+  
+  // Format rows
+  const rows = data.map(item => [
+    item.date,
+    `"${item.category || ''}"`,
+    `"${item.title || ''}"`,
+    item.status,
+    Number(item.amount).toFixed(2).replace('.', ',') // Format for excel BR
+  ].join(';')); // Use semicolon for BR excel
+
+  const csvContent = [headers.join(';'), ...rows].join('\n');
+  
+  // Add UTF-8 BOM for Excel acentuation
+  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  
+  link.setAttribute('href', url);
+  link.setAttribute('download', `${filename}.csv`);
+  link.style.visibility = 'hidden';
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
