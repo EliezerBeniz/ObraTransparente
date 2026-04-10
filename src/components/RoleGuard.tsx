@@ -5,7 +5,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 
 interface RoleGuardProps {
   children: React.ReactNode;
-  allowedRoles: ('admin' | 'viewer')[];
+  allowedRoles: ('admin' | 'viewer' | 'convidado')[];
   fallback?: React.ReactNode;
 }
 
