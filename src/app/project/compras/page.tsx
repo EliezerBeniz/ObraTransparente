@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { ShoppingItem } from '@/lib/types';
-import PageContainer from '@/components/PageContainer';
 import { ShoppingBag, Calendar, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -34,12 +33,10 @@ export default function PublicShoppingPage() {
   const boughtItems = items.filter(i => i.status === 'Comprado');
 
   return (
-    <PageContainer>
-      <div className="max-w-4xl mx-auto space-y-12">
+    <div className="space-y-12">
         {/* Header Block */}
         <div className="border-b border-ghost-border pb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-            <ShoppingBag size={16} />
             <span>Previsões</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-heading text-foreground tracking-tight mb-4">
@@ -133,7 +130,6 @@ export default function PublicShoppingPage() {
             )}
           </div>
         )}
-      </div>
-    </PageContainer>
+    </div>
   );
 }

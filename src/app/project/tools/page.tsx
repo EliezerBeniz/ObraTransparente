@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { ToolLending } from '@/lib/types';
 import { Wrench, Search, Clock, CheckCircle2, User as UserIcon, Calendar, Camera } from 'lucide-react';
-import PageContainer from '@/components/PageContainer';
 
 export default function ProjectToolsPage() {
   const [lendings, setLendings] = useState<ToolLending[]>([]);
@@ -44,22 +43,14 @@ export default function ProjectToolsPage() {
   });
 
   return (
-    <PageContainer>
-      <div className="max-w-4xl mx-auto space-y-12">
+    <div className="space-y-12">
         {/* Header Block (Architectural Ledger Style) */}
         <div className="border-b border-ghost-border pb-10">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-surface-low rounded-architectural flex items-center justify-center text-primary">
-              <Wrench size={24} />
-            </div>
-            <div>
-              <h1 className="text-4xl font-heading text-foreground">Ferramentas da Obra</h1>
-              <p className="text-tertiary font-body mt-2 max-w-2xl">
-                Controle de equipamentos emprestados para a equipe do canteiro de obras.
-                Apenas ferramentas pendentes ou extraviadas são exibidas aqui.
-              </p>
-            </div>
-          </div>
+          <h1 className="text-4xl font-heading text-foreground">Ferramentas da Obra</h1>
+          <p className="text-tertiary font-body mt-2 max-w-2xl">
+            Controle de equipamentos emprestados para a equipe do canteiro de obras.
+            Apenas ferramentas pendentes ou extraviadas são exibidas aqui.
+          </p>
 
           <div className="mt-8 flex flex-col md:flex-row gap-6 md:items-center justify-between">
              <div className="flex gap-8">
@@ -165,7 +156,6 @@ export default function ProjectToolsPage() {
              ))}
           </div>
         )}
-      </div>
-    </PageContainer>
+    </div>
   );
 }
