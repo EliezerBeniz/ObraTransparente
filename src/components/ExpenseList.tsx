@@ -3,7 +3,7 @@ import { ExpenseWithAttachments } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { AttachmentLinks } from './AttachmentLinks';
 import { ExpenseCard } from './ExpenseCard';
-import { Calendar, Users } from 'lucide-react';
+import { Calendar, Users, Link as LinkIcon } from 'lucide-react';
 
 interface ExpenseListProps {
   expenses: ExpenseWithAttachments[];
@@ -112,6 +112,17 @@ export function ExpenseList({
                               <span className="text-[9px] font-bold text-tertiary uppercase tracking-tight" title={formatCurrency(p.amount_paid)}>
                                 {p.profiles?.full_name?.split(' ')[0] || 'Sócio'}
                               </span>
+                              {(p as any).receipt_url && (
+                                <a 
+                                  href={(p as any).receipt_url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:text-primary-container transition-colors"
+                                  title="Ver Comprovante"
+                                >
+                                  <LinkIcon size={10} />
+                                </a>
+                              )}
                             </div>
                           ))
                         ) : (

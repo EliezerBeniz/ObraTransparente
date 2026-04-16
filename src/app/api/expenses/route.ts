@@ -87,7 +87,8 @@ export async function POST(request: Request) {
       const participantsData = participants.map((p: any) => ({
         expense_id: expenseData.id,
         user_id: p.user_id,
-        amount_paid: p.amount_paid
+        amount_paid: p.amount_paid,
+        receipt_url: p.receipt_url || null
       }))
 
       const { error: participantsError } = await supabase

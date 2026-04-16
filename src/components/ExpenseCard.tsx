@@ -2,7 +2,7 @@ import React from 'react';
 import { ExpenseWithAttachments } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { AttachmentLinks } from './AttachmentLinks';
-import { Edit3, Trash2, Users } from 'lucide-react';
+import { Edit3, Trash2, Users, ExternalLink } from 'lucide-react';
 
 interface ExpenseCardProps {
   expense: ExpenseWithAttachments;
@@ -56,13 +56,23 @@ export function ExpenseCard({
               <Users size={12} className="text-tertiary opacity-40 shrink-0" />
               <div className="flex flex-wrap gap-1">
                 {expense.expense_participants.map((p, idx) => (
-                  <span 
+                  <div 
                     key={p.id || idx} 
-                    className="text-[9px] px-1.5 py-0.5 bg-secondary/10 text-secondary border border-secondary/20 rounded font-bold uppercase tracking-tight flex-shrink-0"
+                    className="flex items-center gap-1.5 text-[9px] px-1.5 py-0.5 bg-secondary/10 text-secondary border border-secondary/20 rounded font-bold uppercase tracking-tight flex-shrink-0"
                     title={`Pago: ${formatCurrency(p.amount_paid)}`}
                   >
                     {p.profiles?.full_name?.split(' ')[0] || 'Sócio'}
-                  </span>
+                    {(p as any).receipt_url && (
+                      <a 
+                        href={(p as any).receipt_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-secondary/60 hover:text-secondary transition-colors"
+                      >
+                        <ExternalLink size={10} />
+                      </a>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>

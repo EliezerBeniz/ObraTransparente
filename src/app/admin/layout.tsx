@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, LogOut, FileText, Settings, Users, Store, FolderOpen, Clock, Camera, Hammer, Wrench, ShoppingBag, Wallet } from 'lucide-react';
+import { LayoutDashboard, LogOut, FileText, Settings, Users, Store, FolderOpen, Clock, Camera, Hammer, Wrench, ShoppingBag, Wallet, ChevronRight } from 'lucide-react';
 
 import { useAuth } from '@/components/providers/AuthProvider';
 
@@ -14,6 +14,8 @@ export default function AdminLayout({
 }) {
   const { user, role, signOut, loading } = useAuth();
   const router = useRouter();
+
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!loading && (!user || role !== 'admin')) {
@@ -31,153 +33,72 @@ export default function AdminLayout({
 
   if (!user || role !== 'admin') return null;
 
+  const SidebarLink = ({ href, icon: Icon, label, color = "text-primary" }: { href: string, icon: any, label: string, color?: string }) => {
+    const isActive = pathname === href;
+    return (
+      <Link
+        href={href}
+        className={`flex items-center justify-between group px-4 py-2.5 text-sm font-heading rounded-architectural transition-all duration-200 ${
+          isActive 
+            ? 'bg-primary/10 text-primary shadow-sm' 
+            : 'text-tertiary hover:bg-surface-low hover:text-foreground'
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <Icon size={18} className={`${isActive ? color : 'text-tertiary group-hover:text-primary transition-colors'}`} />
+          <span className={isActive ? 'font-bold' : 'font-medium'}>{label}</span>
+        </div>
+        {isActive && <div className="w-1 h-4 bg-primary rounded-full animate-in zoom-in duration-300" />}
+      </Link>
+    );
+  };
+
   return (
     <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
-      <aside className="w-64 bg-surface-lowest border-r border-ghost-border flex flex-col fixed h-full z-10">
-        <div className="p-6 border-b border-ghost-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-architectural flex items-center justify-center text-white shadow-lg shadow-primary/20">
+      <aside className="w-72 bg-surface-lowest border-r border-ghost-border flex flex-col fixed h-full z-10 shadow-sm">
+        <div className="p-6 border-b border-ghost-border bg-white">
+          <Link href="/dashboard" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 bg-primary rounded-architectural flex items-center justify-center text-white shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
               <LayoutDashboard size={20} />
             </div>
             <div>
               <h1 className="text-base font-heading text-foreground leading-none">Admin</h1>
-              <p className="text-[9px] text-tertiary uppercase tracking-wider mt-0.5">Painel de Controle</p>
+              <p className="text-[9px] text-tertiary uppercase tracking-wider mt-0.5 font-bold">Painel de Controle</p>
             </div>
-          </div>
+          </Link>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
-          <Link
-            href="/admin/expenses"
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
-              typeof window !== 'undefined' && window.location.pathname === '/admin/expenses' 
-                ? 'bg-surface-low text-foreground' 
-                : 'text-tertiary hover:bg-surface-low'
-            }`}
-          >
-            <FileText size={18} className="text-primary" />
-            Gerenciar Despesas
-          </Link>
+        <nav className="flex-1 p-4 space-y-6 overflow-y-auto custom-scrollbar">
+          {/* Categoria: Financeiro */}
+          <div className="space-y-1">
+            <p className="px-4 text-[10px] uppercase tracking-[0.15em] font-heading text-tertiary/60 font-black mb-3">Financeiro</p>
+            <SidebarLink href="/admin/expenses" icon={FileText} label="Gerenciar Despesas" />
+            <SidebarLink href="/admin/adiantamentos" icon={Wallet} label="Caixa da Obra" />
+            <SidebarLink href="/admin/compras" icon={ShoppingBag} label="Lista de Compras" />
+            <SidebarLink href="/admin/socios" icon={Users} label="Sócios e Acessos" />
+          </div>
 
-          <Link
-            href="/admin/compras"
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
-              typeof window !== 'undefined' && window.location.pathname === '/admin/compras' 
-                ? 'bg-surface-low text-foreground' 
-                : 'text-tertiary hover:bg-surface-low'
-            }`}
-          >
-            <ShoppingBag size={18} className="text-primary" />
-            Lista de Compras
-          </Link>
+          {/* Categoria: Logística */}
+          <div className="space-y-1">
+            <p className="px-4 text-[10px] uppercase tracking-[0.15em] font-heading text-tertiary/60 font-black mb-3">Equipe & Logística</p>
+            <SidebarLink href="/admin/pedreiros" icon={Hammer} label="Equipe de Obra" />
+            <SidebarLink href="/admin/suppliers" icon={Store} label="Fornecedores" />
+            <SidebarLink href="/admin/tools" icon={Wrench} label="Ferramentas" />
+          </div>
 
-          <Link
-            href="/admin/adiantamentos"
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
-              typeof window !== 'undefined' && window.location.pathname === '/admin/adiantamentos' 
-                ? 'bg-surface-low text-foreground' 
-                : 'text-tertiary hover:bg-surface-low'
-            }`}
-          >
-            <Wallet size={18} className="text-primary" />
-            Caixa da Obra
-          </Link>
+          {/* Categoria: Projeto */}
+          <div className="space-y-1">
+            <p className="px-4 text-[10px] uppercase tracking-[0.15em] font-heading text-tertiary/60 font-black mb-3">Projeto</p>
+            <SidebarLink href="/admin/timeline" icon={Clock} label="Cronograma" />
+            <SidebarLink href="/admin/evolution" icon={Camera} label="Diário de Obra" />
+            <SidebarLink href="/admin/documents" icon={FolderOpen} label="Documentos" />
+          </div>
 
-          <Link
-            href="/admin/suppliers"
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
-              typeof window !== 'undefined' && window.location.pathname === '/admin/suppliers' 
-                ? 'bg-surface-low text-foreground' 
-                : 'text-tertiary hover:bg-surface-low'
-            }`}
-          >
-            <Store size={18} />
-            Fornecedores
-          </Link>
-
-          <Link
-            href="/admin/pedreiros"
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
-              typeof window !== 'undefined' && window.location.pathname === '/admin/pedreiros' 
-                ? 'bg-surface-low text-foreground' 
-                : 'text-tertiary hover:bg-surface-low'
-            }`}
-          >
-            <Hammer size={18} />
-            Equipe de Obra
-          </Link>
-
-          <Link
-            href="/admin/tools"
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
-              typeof window !== 'undefined' && window.location.pathname === '/admin/tools' 
-                ? 'bg-surface-low text-foreground' 
-                : 'text-tertiary hover:bg-surface-low'
-            }`}
-          >
-            <Wrench className="text-tertiary" size={18} />
-            Ferramentas
-          </Link>
-
-          <Link
-            href="/admin/documents"
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
-              typeof window !== 'undefined' && window.location.pathname === '/admin/documents' 
-                ? 'bg-surface-low text-foreground' 
-                : 'text-tertiary hover:bg-surface-low'
-            }`}
-          >
-            <FolderOpen size={18} />
-            Documentos do Projeto
-          </Link>
-
-          <Link
-            href="/admin/socios"
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
-              typeof window !== 'undefined' && window.location.pathname === '/admin/socios' 
-                ? 'bg-surface-low text-foreground' 
-                : 'text-tertiary hover:bg-surface-low'
-            }`}
-          >
-            <Users size={18} />
-            Sócios e Permissões
-          </Link>
-          <Link
-            href="/admin/timeline"
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
-              typeof window !== 'undefined' && window.location.pathname === '/admin/timeline' 
-                ? 'bg-surface-low text-foreground' 
-                : 'text-tertiary hover:bg-surface-low'
-            }`}
-          >
-            <Clock size={18} />
-            Cronograma (Etapas)
-          </Link>
-
-          <Link
-            href="/admin/evolution"
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
-              typeof window !== 'undefined' && window.location.pathname === '/admin/evolution' 
-                ? 'bg-surface-low text-foreground' 
-                : 'text-tertiary hover:bg-surface-low'
-            }`}
-          >
-            <Camera size={18} />
-            Diário de Obra (Fotos)
-          </Link>
-
-          <Link
-            href="/admin/settings"
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
-              typeof window !== 'undefined' && window.location.pathname === '/admin/settings' 
-                ? 'bg-surface-low text-foreground' 
-                : 'text-tertiary hover:bg-surface-low'
-            }`}
-          >
-            <Settings size={18} />
-            Configurações Projeto
-          </Link>
+          {/* Categoria: Configurações */}
+          <div className="space-y-1 pt-4 border-t border-ghost-border/50">
+            <SidebarLink href="/admin/settings" icon={Settings} label="Configurações" />
+          </div>
         </nav>
 
         <div className="p-4 border-t border-ghost-border bg-surface-lowest mt-auto">
@@ -198,7 +119,7 @@ export default function AdminLayout({
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 ml-64 flex flex-col">
+      <div className="flex-1 ml-72 flex flex-col">
         <main className="p-8">
           {children}
         </main>

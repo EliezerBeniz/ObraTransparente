@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { LayoutDashboard, FileText, Settings, Search, LogOut, User as UserIcon, Menu, X, FolderOpen, Clock, Camera, Wrench, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, Search, LogOut, User as UserIcon, Menu, X, FolderOpen, Clock, Camera, Wrench, ShoppingBag, ChevronDown, Wallet, Construction, Activity } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { usePathname } from 'next/navigation';
@@ -11,6 +11,7 @@ const Header = () => {
   const pathname = usePathname();
   const [isMounted, setIsMounted] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [activeDropdown, setActiveDropdown] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setIsMounted(true);
@@ -50,52 +51,104 @@ const Header = () => {
             <nav className="hidden md:flex items-center gap-1">
               <Link 
                 href="/dashboard" 
-                className={`px-4 py-2 text-sm font-body rounded-architectural transition-colors ${pathname === '/dashboard' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+                className={`px-4 py-2 text-sm font-heading rounded-architectural transition-all ${pathname === '/dashboard' ? 'bg-primary/10 text-primary font-bold shadow-sm border border-primary/10' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
               >
                 Dashboard
               </Link>
-              <Link 
-                href="/expenses" 
-                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/expenses' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+              
+              {/* Dropdown Financeiro */}
+              <div 
+                className="relative group px-1"
+                onMouseEnter={() => setActiveDropdown('finance')}
+                onMouseLeave={() => setActiveDropdown(null)}
               >
-                Extrato
-              </Link>
-              <Link 
-                href="/dashboard/balanco" 
-                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/dashboard/balanco' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+                <button 
+                  className={`flex items-center gap-1.5 px-3 py-2 text-sm font-heading rounded-architectural transition-all ${pathname.includes('/expenses') || pathname.includes('/balanco') || pathname.includes('/compras') ? 'text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+                >
+                  <Wallet size={14} className="opacity-70" />
+                  Financeiro
+                  <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'finance' ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {activeDropdown === 'finance' && (
+                  <div className="absolute top-full left-0 w-56 pt-2 z-[60]">
+                    <div className="glass border border-ghost-border rounded-architectural shadow-xl p-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <Link href="/expenses" className="flex items-center gap-3 px-3 py-2.5 text-xs text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-colors">
+                        <FileText size={14} className="text-secondary" />
+                        Extrato de Obra
+                      </Link>
+                      <Link href="/dashboard/balanco" className="flex items-center gap-3 px-3 py-2.5 text-xs text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-colors">
+                        <Activity size={14} className="text-tertiary" />
+                        Balanço de Sócios
+                      </Link>
+                      <Link href="/project/compras" className="flex items-center gap-3 px-3 py-2.5 text-xs text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-colors">
+                        <ShoppingBag size={14} className="text-amber-500" />
+                        Lista de Compras
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Dropdown Execução */}
+              <div 
+                className="relative group px-1"
+                onMouseEnter={() => setActiveDropdown('construction')}
+                onMouseLeave={() => setActiveDropdown(null)}
               >
-                Balanço
-              </Link>
-              <Link 
-                href="/project/documents" 
-                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/project/documents' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+                <button 
+                  className={`flex items-center gap-1.5 px-3 py-2 text-sm font-heading rounded-architectural transition-all ${pathname.includes('/timeline') || pathname.includes('/evolution') || pathname.includes('/documents') ? 'text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+                >
+                  <Construction size={14} className="opacity-70" />
+                  Execução
+                  <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'construction' ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {activeDropdown === 'construction' && (
+                  <div className="absolute top-full left-0 w-56 pt-2 z-[60]">
+                    <div className="glass border border-ghost-border rounded-architectural shadow-xl p-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <Link href="/project/evolution" className="flex items-center gap-3 px-3 py-2.5 text-xs text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-colors">
+                        <Camera size={14} className="text-secondary" />
+                        Diário de Obra
+                      </Link>
+                      <Link href="/project/timeline" className="flex items-center gap-3 px-3 py-2.5 text-xs text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-colors">
+                        <Clock size={14} className="text-tertiary" />
+                        Etapas da Obra
+                      </Link>
+                      <Link href="/project/documents" className="flex items-center gap-3 px-3 py-2.5 text-xs text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-colors">
+                        <FolderOpen size={14} className="text-amber-500" />
+                        Documentos
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Dropdown Utilidades */}
+              <div 
+                className="relative group px-1"
+                onMouseEnter={() => setActiveDropdown('utility')}
+                onMouseLeave={() => setActiveDropdown(null)}
               >
-                Documentos
-              </Link>
-              <Link 
-                href="/project/timeline" 
-                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/project/timeline' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
-              >
-                Etapas
-              </Link>
-              <Link 
-                href="/project/evolution" 
-                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/project/evolution' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
-              >
-                Diário
-              </Link>
-              <Link 
-                href="/project/tools" 
-                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/project/tools' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
-              >
-                Ferramentas
-              </Link>
-              <Link 
-                href="/project/compras" 
-                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/project/compras' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
-              >
-                Compras
-              </Link>
+                <button 
+                  className={`flex items-center gap-1.5 px-3 py-2 text-sm font-heading rounded-architectural transition-all ${pathname.includes('/tools') ? 'text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+                >
+                  <Wrench size={14} className="opacity-70" />
+                  Extras
+                  <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'utility' ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {activeDropdown === 'utility' && (
+                  <div className="absolute top-full left-0 w-56 pt-2 z-[60]">
+                    <div className="glass border border-ghost-border rounded-architectural shadow-xl p-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <Link href="/project/tools" className="flex items-center gap-3 px-3 py-2.5 text-xs text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-colors">
+                        <Wrench size={14} className="text-secondary" />
+                        Ferramentas
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
             </nav>
           )}
         </div>
@@ -115,28 +168,53 @@ const Header = () => {
               
               <div className="hidden sm:block h-8 w-[1px] bg-ghost-border mx-2" />
               
-              {/* Account / Mobile Menu Trigger */}
+              {/* Account Dropdown & Mobile Trigger */}
               <div className="flex items-center gap-2 sm:gap-3">
-                {loading ? (
-                  <div className="hidden lg:flex items-center justify-center w-28 h-9 bg-surface-low rounded-architectural animate-pulse border border-ghost-border/50 text-[10px] text-tertiary/40 font-heading">
-                    Carregando...
-                  </div>
-                ) : role === 'admin' ? (
-                  <Link href="/admin/expenses" className="hidden lg:block bg-primary/10 text-primary px-4 py-2 rounded-architectural text-xs font-heading hover:bg-primary/20 transition-all border border-primary/10 animate-in fade-in duration-300">
-                    Área Admin
-                  </Link>
-                ) : null}
-                
-                <button 
-                  onClick={signOut}
-                  className="hidden sm:flex items-center gap-2 text-tertiary hover:text-red-500 transition-colors text-xs font-body group"
-                  title="Sair do sistema"
+                <div 
+                  className="relative hidden sm:block px-1"
+                  onMouseEnter={() => setActiveDropdown('profile')}
+                  onMouseLeave={() => setActiveDropdown(null)}
                 >
-                  <div className="w-8 h-8 rounded-full bg-surface-low flex items-center justify-center group-hover:bg-red-50">
-                    <LogOut size={14} />
-                  </div>
-                  <span className="hidden lg:inline text-xs font-medium">Sair</span>
-                </button>
+                  <button 
+                    className={`flex items-center gap-2 p-1.5 rounded-full transition-all ${activeDropdown === 'profile' ? 'bg-primary/10 text-primary shadow-sm' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                      <UserIcon size={16} />
+                    </div>
+                    <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'profile' ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {activeDropdown === 'profile' && (
+                    <div className="absolute top-full right-0 w-56 pt-2 z-[60]">
+                      <div className="glass border border-ghost-border rounded-architectural shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="px-4 py-3 bg-surface-low/50 border-b border-ghost-border">
+                          <p className="text-[10px] font-heading text-tertiary uppercase tracking-widest leading-none mb-1">Usuário</p>
+                          <p className="text-xs font-bold text-foreground truncate">{user.email?.split('@')[0]}</p>
+                        </div>
+                        
+                        <div className="p-1.5">
+                          {role === 'admin' && (
+                            <Link 
+                              href="/admin/expenses" 
+                              className="flex items-center gap-3 px-3 py-2.5 text-xs text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-colors"
+                            >
+                              <Settings size={14} className="text-primary" />
+                              Área Administrativa
+                            </Link>
+                          )}
+                          
+                          <button 
+                            onClick={signOut}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 text-xs text-red-500 hover:bg-red-50 rounded-architectural transition-colors"
+                          >
+                            <LogOut size={14} />
+                            Encerrar Sessão
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Mobile Menu Button */}
                 <button 
@@ -179,6 +257,12 @@ const Header = () => {
               </div>
               Dashboard
             </Link>
+
+            <div className="mt-4 mb-2 px-4 flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Financeiro</span>
+              <div className="h-[1px] flex-1 bg-ghost-border"></div>
+            </div>
+
             <Link 
               href="/expenses" 
               className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/expenses' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
@@ -187,15 +271,6 @@ const Header = () => {
                 <FileText size={18} />
               </div>
               Extrato de Obra
-            </Link>
-            <Link 
-              href="/project/documents" 
-              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/documents' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
-            >
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/project/documents' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
-                <FolderOpen size={18} />
-              </div>
-              Documentos
             </Link>
             <Link 
               href="/dashboard/balanco" 
@@ -207,14 +282,20 @@ const Header = () => {
               Balanço Financeiro
             </Link>
             <Link 
-              href="/project/timeline" 
-              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/timeline' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
+              href="/project/compras" 
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/compras' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
             >
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/project/timeline' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
-                <Clock size={18} />
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/project/compras' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                <ShoppingBag size={18} />
               </div>
-              Etapas da Obra
+              Lista de Compras
             </Link>
+
+            <div className="mt-4 mb-2 px-4 flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Execução</span>
+              <div className="h-[1px] flex-1 bg-ghost-border"></div>
+            </div>
+
             <Link 
               href="/project/evolution" 
               className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/evolution' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
@@ -225,6 +306,30 @@ const Header = () => {
               Diário de Obra
             </Link>
             <Link 
+              href="/project/timeline" 
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/timeline' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
+            >
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/project/timeline' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                <Clock size={18} />
+              </div>
+              Etapas da Obra
+            </Link>
+            <Link 
+              href="/project/documents" 
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/documents' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
+            >
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/project/documents' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                <FolderOpen size={18} />
+              </div>
+              Documentos
+            </Link>
+
+            <div className="mt-4 mb-2 px-4 flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Extras</span>
+              <div className="h-[1px] flex-1 bg-ghost-border"></div>
+            </div>
+
+            <Link 
               href="/project/tools" 
               className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/tools' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
             >
@@ -232,15 +337,6 @@ const Header = () => {
                 <Wrench size={18} />
               </div>
               Ferramentas Emprestadas
-            </Link>
-            <Link 
-              href="/project/compras" 
-              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/compras' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
-            >
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/project/compras' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
-                <ShoppingBag size={18} />
-              </div>
-              Lista de Compras
             </Link>
 
             {loading ? (

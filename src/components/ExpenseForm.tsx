@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, X, UserPlus, Users, Trash2, Equal, Wallet } from 'lucide-react';
+import { Save, X, UserPlus, Users, Trash2, Equal, Wallet, Link } from 'lucide-react';
 import { ExpenseWithAttachments, Profile } from '@/lib/types';
 
 interface ExpenseFormProps {
@@ -38,7 +38,7 @@ export function ExpenseForm({
   });
 
   const [socios, setSocios] = useState<Profile[]>([]);
-  const [participants, setParticipants] = useState<{ user_id: string, amount_paid: number }[]>([]);
+  const [participants, setParticipants] = useState<{ user_id: string; amount_paid: number; receipt_url: string }[]>([]);
   const [paidFromFund, setPaidFromFund] = useState(false);
 
   useEffect(() => {
@@ -70,7 +70,8 @@ export function ExpenseForm({
       if (initialData.expense_participants) {
         setParticipants(initialData.expense_participants.map(p => ({
           user_id: p.user_id,
-          amount_paid: p.amount_paid
+          amount_paid: Number(p.amount_paid),
+          receipt_url: (p as any).receipt_url || ''
         })));
       }
     } else if (prefillData) {
@@ -87,7 +88,7 @@ export function ExpenseForm({
 
   const addParticipant = () => {
     if (socios.length > 0) {
-      setParticipants([...participants, { user_id: socios[0].id, amount_paid: 0 }]);
+      setParticipants([...participants, { user_id: socios[0].id, amount_paid: 0, receipt_url: '' }]);
     }
   };
 
@@ -136,7 +137,8 @@ export function ExpenseForm({
       paid_from_fund: paidFromFund,
       participants: paidFromFund ? [] : participants.map(p => ({
         user_id: p.user_id,
-        amount_paid: p.amount_paid
+        amount_paid: p.amount_paid,
+        receipt_url: p.receipt_url || null,
       }))
     };
     await onSubmit(payload);
@@ -244,18 +246,20 @@ export function ExpenseForm({
             </select>
           </div>
 
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold block">
-              Link do Comprovante (Google Drive)
-            </label>
-            <input
-              type="url"
-              value={form.link}
-              onChange={(e) => setForm({ ...form, link: e.target.value })}
-              placeholder="https://drive.google.com/..."
-              className="w-full bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-tertiary/40"
-            />
-          </div>
+          {paidFromFund && (
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold block">
+                Link do Comprovante (Caixa da Obra)
+              </label>
+              <input
+                type="url"
+                value={form.link}
+                onChange={(e) => setForm({ ...form, link: e.target.value })}
+                placeholder="https://drive.google.com/..."
+                className="w-full bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-tertiary/40"
+              />
+            </div>
+          )}
 
           {/* Payment Method Toggle */}
           <div className="md:col-span-2 pt-4 border-t border-ghost-border space-y-4">
@@ -307,18 +311,19 @@ export function ExpenseForm({
 
               <div className="space-y-3">
                 {participants.map((p, idx) => (
-                  <div key={idx} className="flex flex-col md:flex-row items-center gap-3 animate-[slideIn_0.2s_ease-out]">
-                    <select
-                      value={p.user_id}
-                      onChange={(e) => updateParticipant(idx, 'user_id', e.target.value)}
-                      className="flex-grow bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-secondary/20 outline-none transition-all appearance-none"
-                    >
-                      {socios.map(s => (
-                        <option key={s.id} value={s.id}>{s.full_name || 'Usuário sem nome'}</option>
-                      ))}
-                    </select>
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                      <div className="relative flex-grow md:w-40">
+                  <div key={idx} className="flex flex-col gap-3 p-4 bg-surface-low/30 rounded-architectural border border-ghost-border animate-[slideIn_0.2s_ease-out]">
+                    <div className="flex flex-col md:flex-row items-center gap-3 w-full">
+                      <select
+                        value={p.user_id}
+                        onChange={(e) => updateParticipant(idx, 'user_id', e.target.value)}
+                        className="flex-grow bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-secondary/20 outline-none transition-all appearance-none w-full md:w-auto"
+                      >
+                        {socios.map(s => (
+                          <option key={s.id} value={s.id}>{s.full_name || 'Usuário sem nome'}</option>
+                        ))}
+                      </select>
+                      
+                      <div className="relative w-full md:w-32">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary text-xs">R$</span>
                         <input
                           type="number"
@@ -329,10 +334,33 @@ export function ExpenseForm({
                           className="w-full bg-surface-low border-none rounded-architectural pl-10 pr-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-secondary/20 outline-none transition-all"
                         />
                       </div>
+
                       <button
                         type="button"
                         onClick={() => removeParticipant(idx)}
-                        className="p-3 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-architectural transition-all"
+                        className="p-3 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-architectural transition-all hidden md:block"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="relative flex-grow">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary">
+                          <Link size={14} />
+                        </span>
+                        <input
+                          type="url"
+                          value={p.receipt_url}
+                          onChange={(e) => updateParticipant(idx, 'receipt_url', e.target.value)}
+                          placeholder="Link do comprovante deste sócio (Google Drive)"
+                          className="w-full bg-surface-low/50 border-none rounded-architectural pl-10 pr-4 py-2 text-xs font-body text-foreground focus:ring-2 focus:ring-secondary/20 outline-none transition-all placeholder:text-tertiary/40"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeParticipant(idx)}
+                        className="p-3 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-architectural transition-all md:hidden"
                       >
                         <Trash2 size={16} />
                       </button>
