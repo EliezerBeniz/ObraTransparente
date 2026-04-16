@@ -44,21 +44,23 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { title, description, amount, date, category, status, quantity, file_url, label, participants } = body
+    const { title, description, amount, date, category, status, quantity, file_url, label, participants, paid_from_fund, shopping_item_id } = body
 
     // URL Validation
     if (file_url && !/^https?:\/\/(drive|docs)\.google\.com\//.test(file_url)) {
       return NextResponse.json({ error: 'Invalid attachment URL. Must be a Google Drive link.' }, { status: 400 })
     }
 
-    // Participants Validation
-    if (!participants || !Array.isArray(participants) || participants.length === 0) {
-      return NextResponse.json({ error: 'Ao menos um pagador (sócio) deve ser informado.' }, { status: 400 })
-    }
+    if (!paid_from_fund) {
+      // Participants Validation (only when not paid from fund)
+      if (!participants || !Array.isArray(participants) || participants.length === 0) {
+        return NextResponse.json({ error: 'Ao menos um pagador (sócio) deve ser informado.' }, { status: 400 })
+      }
 
-    const participantsSum = participants.reduce((acc, p) => acc + Number(p.amount_paid), 0)
-    if (Math.abs(participantsSum - Number(amount)) > 0.01) {
-      return NextResponse.json({ error: `A soma dos pagamentos (R$ ${participantsSum}) não bate com o total (R$ ${amount}).` }, { status: 400 })
+      const participantsSum = participants.reduce((acc: number, p: any) => acc + Number(p.amount_paid), 0)
+      if (Math.abs(participantsSum - Number(amount)) > 0.01) {
+        return NextResponse.json({ error: `A soma dos pagamentos (R$ ${participantsSum}) não bate com o total (R$ ${amount}).` }, { status: 400 })
+      }
     }
 
     // Insert Expense
@@ -72,6 +74,7 @@ export async function POST(request: Request) {
         category,
         status,
         quantity: Number(quantity) || 1,
+        paid_from_fund: paid_from_fund || false,
         created_by: user.id
       })
       .select()
@@ -79,18 +82,30 @@ export async function POST(request: Request) {
 
     if (expenseError) throw expenseError
 
-    // Insert Participants
-    const participantsData = participants.map(p => ({
-      expense_id: expenseData.id,
-      user_id: p.user_id,
-      amount_paid: p.amount_paid
-    }))
+    // Insert Participants (only when not paid from fund)
+    if (!paid_from_fund && participants?.length > 0) {
+      const participantsData = participants.map((p: any) => ({
+        expense_id: expenseData.id,
+        user_id: p.user_id,
+        amount_paid: p.amount_paid
+      }))
 
-    const { error: participantsError } = await supabase
-      .from('expense_participants')
-      .insert(participantsData)
+      const { error: participantsError } = await supabase
+        .from('expense_participants')
+        .insert(participantsData)
 
-    if (participantsError) throw participantsError
+      if (participantsError) throw participantsError
+    }
+
+    // Mark shopping item as bought if linked
+    if (shopping_item_id) {
+      try {
+        await supabase
+          .from('shopping_items')
+          .update({ status: 'Comprado' })
+          .eq('id', shopping_item_id)
+      } catch (_) { /* silent fail */ }
+    }
 
     // Insert Attachment if provided
     if (file_url) {

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from '@/lib/utils';
 import { ExpenseWithAttachments, Profile } from '@/lib/types';
-import { calculateProjectBalance, ProjectBalance } from '@/lib/finance';
+import { calculateProjectBalance, ProjectBalance, Advance } from '@/lib/finance';
 
 export default function BalancoPage() {
   const [balance, setBalance] = useState<ProjectBalance | null>(null);
@@ -22,19 +22,21 @@ export default function BalancoPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [expensesRes, sociosRes] = await Promise.all([
+      const [expensesRes, sociosRes, advancesRes] = await Promise.all([
         fetch('/api/expenses'),
-        fetch('/api/socios')
+        fetch('/api/socios'),
+        fetch('/api/advances'),
       ]);
 
       if (expensesRes.ok && sociosRes.ok) {
         const expenses: ExpenseWithAttachments[] = await expensesRes.json();
         const rawSocios: Profile[] = await sociosRes.json();
+        const advances: Advance[] = advancesRes.ok ? await advancesRes.json() : [];
         const socios = rawSocios.filter((s: any) => {
           const role = Array.isArray(s.user_roles) ? s.user_roles[0]?.role : s.user_roles?.role;
           return role !== 'convidado';
         });
-        const calculated = calculateProjectBalance(expenses, socios);
+        const calculated = calculateProjectBalance(expenses, socios, advances);
         setBalance(calculated);
       }
     } catch (error) {
@@ -136,6 +138,11 @@ export default function BalancoPage() {
                       style={{ width: `${Math.min(100, (socio.paid / socio.expected) * 100)}%` }}
                     />
                   </div>
+                  {(socio as any).advancesTotal > 0 && (
+                    <p className="text-[10px] text-tertiary font-body">
+                      Inclui <strong>{formatCurrency((socio as any).advancesTotal)}</strong> em aportes ao Caixa
+                    </p>
+                  )}
                 </div>
               </div>
             ))}

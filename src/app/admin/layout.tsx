@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, LogOut, FileText, Settings, Users, Store, FolderOpen, Clock, Camera, Hammer, Wrench, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, LogOut, FileText, Settings, Users, Store, FolderOpen, Clock, Camera, Hammer, Wrench, ShoppingBag, Wallet } from 'lucide-react';
 
 import { useAuth } from '@/components/providers/AuthProvider';
 
@@ -70,6 +70,18 @@ export default function AdminLayout({
           >
             <ShoppingBag size={18} className="text-primary" />
             Lista de Compras
+          </Link>
+
+          <Link
+            href="/admin/adiantamentos"
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-body rounded-architectural transition-colors ${
+              typeof window !== 'undefined' && window.location.pathname === '/admin/adiantamentos' 
+                ? 'bg-surface-low text-foreground' 
+                : 'text-tertiary hover:bg-surface-low'
+            }`}
+          >
+            <Wallet size={18} className="text-primary" />
+            Caixa da Obra
           </Link>
 
           <Link

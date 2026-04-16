@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, X, UserPlus, Users, Trash2, Equal } from 'lucide-react';
+import { Save, X, UserPlus, Users, Trash2, Equal, Wallet } from 'lucide-react';
 import { ExpenseWithAttachments, Profile } from '@/lib/types';
 
 interface ExpenseFormProps {
@@ -39,6 +39,7 @@ export function ExpenseForm({
 
   const [socios, setSocios] = useState<Profile[]>([]);
   const [participants, setParticipants] = useState<{ user_id: string, amount_paid: number }[]>([]);
+  const [paidFromFund, setPaidFromFund] = useState(false);
 
   useEffect(() => {
     fetch('/api/socios')
@@ -115,7 +116,9 @@ export function ExpenseForm({
   };
 
   const totalPaid = participants.reduce((acc, p) => acc + (p.amount_paid || 0), 0);
-  const isValid = Math.abs(totalPaid - (parseFloat(form.amount) || 0)) < 0.01 && participants.length > 0;
+  const isValid = paidFromFund
+    ? (parseFloat(form.amount) > 0)
+    : (Math.abs(totalPaid - (parseFloat(form.amount) || 0)) < 0.01 && participants.length > 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,8 +132,9 @@ export function ExpenseForm({
       quantity: parseFloat(form.quantity) || 1,
       file_url: form.link || null,
       label: 'Comprovante',
-      shopping_item_id: prefillData?.shopping_item_id || null, // pass if available
-      participants: participants.map(p => ({
+      shopping_item_id: prefillData?.shopping_item_id || null,
+      paid_from_fund: paidFromFund,
+      participants: paidFromFund ? [] : participants.map(p => ({
         user_id: p.user_id,
         amount_paid: p.amount_paid
       }))
@@ -253,90 +257,115 @@ export function ExpenseForm({
             />
           </div>
 
-          {/* Sócio Selection Logic */}
+          {/* Payment Method Toggle */}
           <div className="md:col-span-2 pt-4 border-t border-ghost-border space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold flex items-center gap-2">
-                <Users size={14} /> Quem pagou? (Sócios)
-              </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={splitEqually}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-surface-low text-tertiary hover:text-foreground rounded-architectural text-[10px] transition-all uppercase tracking-wider font-bold"
-                >
-                  <Equal size={12} /> Sugerir Divisão Igual
-                </button>
-                <button
-                  type="button"
-                  onClick={addParticipant}
-                  disabled={socios.length === 0}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-secondary/10 text-secondary hover:bg-secondary hover:text-white rounded-architectural text-[10px] transition-all uppercase tracking-wider font-bold disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <UserPlus size={12} /> Adicionar Sócio
-                </button>
-              </div>
+            {/* Fund toggle */}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setPaidFromFund(!paidFromFund)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-architectural text-sm font-heading transition-all border ${
+                  paidFromFund
+                    ? 'bg-primary text-white border-primary shadow-sm'
+                    : 'bg-surface-low text-tertiary border-ghost-border hover:text-foreground'
+                }`}
+              >
+                <Wallet size={14} />
+                Pago pelo Caixa da Obra
+              </button>
+              {paidFromFund && (
+                <p className="text-xs text-tertiary font-body">
+                  Esta despesa será debitada do fundo de adiantamentos.
+                </p>
+              )}
             </div>
 
-            <div className="space-y-3">
-              {participants.map((p, idx) => (
-                <div key={idx} className="flex flex-col md:flex-row items-center gap-3 animate-[slideIn_0.2s_ease-out]">
-                  <select
-                    value={p.user_id}
-                    onChange={(e) => updateParticipant(idx, 'user_id', e.target.value)}
-                    className="flex-grow bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-secondary/20 outline-none transition-all appearance-none"
+            {!paidFromFund && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold flex items-center gap-2">
+                  <Users size={14} /> Quem pagou? (Sócios)
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={splitEqually}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-surface-low text-tertiary hover:text-foreground rounded-architectural text-[10px] transition-all uppercase tracking-wider font-bold"
                   >
-                    {socios.map(s => (
-                      <option key={s.id} value={s.id}>{s.full_name || 'Usuário sem nome'}</option>
-                    ))}
-                  </select>
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-grow md:w-40">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary text-xs">R$</span>
-                      <input
-                        type="number"
-                        value={p.amount_paid}
-                        onChange={(e) => updateParticipant(idx, 'amount_paid', parseFloat(e.target.value) || 0)}
-                        placeholder="0,00"
-                        step="0.01"
-                        className="w-full bg-surface-low border-none rounded-architectural pl-10 pr-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-secondary/20 outline-none transition-all"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeParticipant(idx)}
-                      className="p-3 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-architectural transition-all"
+                    <Equal size={12} /> Sugerir Divisão Igual
+                  </button>
+                  <button
+                    type="button"
+                    onClick={addParticipant}
+                    disabled={socios.length === 0}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-secondary/10 text-secondary hover:bg-secondary hover:text-white rounded-architectural text-[10px] transition-all uppercase tracking-wider font-bold disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <UserPlus size={12} /> Adicionar Sócio
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {participants.map((p, idx) => (
+                  <div key={idx} className="flex flex-col md:flex-row items-center gap-3 animate-[slideIn_0.2s_ease-out]">
+                    <select
+                      value={p.user_id}
+                      onChange={(e) => updateParticipant(idx, 'user_id', e.target.value)}
+                      className="flex-grow bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-secondary/20 outline-none transition-all appearance-none"
                     >
-                      <Trash2 size={16} />
-                    </button>
+                      {socios.map(s => (
+                        <option key={s.id} value={s.id}>{s.full_name || 'Usuário sem nome'}</option>
+                      ))}
+                    </select>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                      <div className="relative flex-grow md:w-40">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary text-xs">R$</span>
+                        <input
+                          type="number"
+                          value={p.amount_paid}
+                          onChange={(e) => updateParticipant(idx, 'amount_paid', parseFloat(e.target.value) || 0)}
+                          placeholder="0,00"
+                          step="0.01"
+                          className="w-full bg-surface-low border-none rounded-architectural pl-10 pr-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-secondary/20 outline-none transition-all"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeParticipant(idx)}
+                        className="p-3 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-architectural transition-all"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                
+                {participants.length === 0 && (
+                  <div className="text-center py-6 bg-surface-low/50 rounded-architectural border border-dashed border-ghost-border">
+                    <p className="text-xs text-tertiary italic">
+                      {socios.length === 0 
+                        ? "Nenhum sócio encontrado no sistema. Verifique os perfis cadastrados." 
+                        : 'Nenhum sócio selecionado. Clique em "Adicionar Sócio".'}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center p-4 bg-surface-low/30 rounded-architectural border border-ghost-border">
+                  <p className="text-xs font-body text-tertiary">Total informado pelos sócios:</p>
+                  <div className="text-right">
+                    <p className={`text-sm font-heading ${isValid ? 'text-secondary' : 'text-red-500'}`}>
+                      R$ {totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                    {!isValid && (
+                      <p className="text-[10px] text-red-400 italic">
+                        A soma deve ser R$ {(parseFloat(form.amount) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </p>
+                    )}
                   </div>
                 </div>
-              ))}
-              
-              {participants.length === 0 && (
-                <div className="text-center py-6 bg-surface-low/50 rounded-architectural border border-dashed border-ghost-border">
-                  <p className="text-xs text-tertiary italic">
-                    {socios.length === 0 
-                      ? "Nenhum sócio encontrado no sistema. Verifique os perfis cadastrados." 
-                      : 'Nenhum sócio selecionado. Clique em "Adicionar Sócio".'}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex justify-between items-center p-4 bg-surface-low/30 rounded-architectural border border-ghost-border">
-                <p className="text-xs font-body text-tertiary">Total informado pelos sócios:</p>
-                <div className="text-right">
-                  <p className={`text-sm font-heading ${isValid ? 'text-secondary' : 'text-red-500'}`}>
-                    R$ {totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </p>
-                  {!isValid && (
-                    <p className="text-[10px] text-red-400 italic">
-                      A soma deve ser R$ {(parseFloat(form.amount) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
-                  )}
-                </div>
               </div>
             </div>
+            )}
           </div>
         </div>
 
