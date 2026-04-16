@@ -122,45 +122,7 @@ export default function Dashboard() {
           </div>
         ))}
         
-        {/* Evolution Quick Link (Premium Redesign) */}
-        <Link 
-          href="/project/evolution" 
-          className="relative bg-surface-lowest rounded-architectural border border-ghost-border transition-all hover:translate-y-[-4px] hover:shadow-xl hover:shadow-primary/10 group flex flex-col justify-between overflow-hidden min-h-[160px]"
-        >
-           {/* Background Photo Preview with Gradient Overlay */}
-           {latestEvolution?.image_url && (
-             <div className="absolute inset-0 z-0">
-               <img 
-                 src={getDirectDriveImageUrl(latestEvolution.image_url)} 
-                 alt="Preview" 
-                 className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 opacity-20 group-hover:opacity-30"
-               />
-               <div className="absolute inset-0 bg-gradient-to-br from-white via-white/80 to-transparent" />
-             </div>
-           )}
 
-           <div className="relative z-10 p-8 h-full flex flex-col justify-between">
-             <div className="flex justify-between items-start">
-                <div className="p-3 rounded-architectural bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
-                  <Camera size={24} />
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <ExternalLink size={14} className="text-tertiary opacity-40 group-hover:opacity-100 group-hover:text-primary transition-all" />
-                  {latestEvolution && (
-                    <span className="text-[9px] font-bold text-primary/40 uppercase tracking-tighter">Atualizado há pouco</span>
-                  )}
-                </div>
-             </div>
-             
-             <div className="mt-4">
-                <p className="text-[10px] font-body text-primary uppercase tracking-[0.2em] mb-1 font-bold">Diário de Obra</p>
-                <h3 className="text-lg font-heading text-foreground tracking-tight flex items-center gap-2">
-                  Ver Fotos da Evolução
-                  <ChevronRight size={16} className="text-primary group-hover:translate-x-1 transition-transform" />
-                </h3>
-             </div>
-           </div>
-        </Link>
       </div>
 
       {/* Content Grid */}
