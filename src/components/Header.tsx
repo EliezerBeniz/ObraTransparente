@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { LayoutDashboard, FileText, Settings, Search, LogOut, User as UserIcon, Menu, X, FolderOpen, Clock, Camera } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, Search, LogOut, User as UserIcon, Menu, X, FolderOpen, Clock, Camera, Wrench, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { usePathname } from 'next/navigation';
@@ -83,6 +83,18 @@ const Header = () => {
                 className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/project/evolution' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
               >
                 Diário
+              </Link>
+              <Link 
+                href="/project/tools" 
+                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/project/tools' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+              >
+                Ferramentas
+              </Link>
+              <Link 
+                href="/project/compras" 
+                className={`px-3 py-2 text-sm font-body rounded-architectural transition-colors whitespace-nowrap ${pathname === '/project/compras' ? 'bg-surface-low text-primary font-bold' : 'text-tertiary hover:bg-surface-low hover:text-foreground'}`}
+              >
+                Compras
               </Link>
             </nav>
           )}
@@ -211,6 +223,24 @@ const Header = () => {
                 <Camera size={18} />
               </div>
               Diário de Obra
+            </Link>
+            <Link 
+              href="/project/tools" 
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/tools' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
+            >
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/project/tools' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                <Wrench size={18} />
+              </div>
+              Ferramentas Emprestadas
+            </Link>
+            <Link 
+              href="/project/compras" 
+              className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname === '/project/compras' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
+            >
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname === '/project/compras' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+                <ShoppingBag size={18} />
+              </div>
+              Lista de Compras
             </Link>
 
             {loading ? (

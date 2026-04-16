@@ -4,6 +4,14 @@ import { ExpenseWithAttachments, Profile } from '@/lib/types';
 
 interface ExpenseFormProps {
   initialData?: ExpenseWithAttachments | null;
+  prefillData?: {
+    supplier?: string;
+    desc?: string;
+    cat?: string;
+    shopping_item_id?: string;
+    amount?: string;
+    date?: string;
+  } | null;
   onSubmit: (payload: any) => Promise<void>;
   onCancel: () => void;
   submitting: boolean;
@@ -13,6 +21,7 @@ const categories = ["Material", "Mão de Obra", "Projetos", "Legal", "Outros"];
 
 export function ExpenseForm({
   initialData,
+  prefillData,
   onSubmit,
   onCancel,
   submitting
@@ -63,8 +72,17 @@ export function ExpenseForm({
           amount_paid: p.amount_paid
         })));
       }
+    } else if (prefillData) {
+      setForm(prev => ({
+        ...prev,
+        supplier: prefillData.supplier || '',
+        desc: prefillData.desc || '',
+        cat: prefillData.cat || 'Material',
+        amount: prefillData.amount || '',
+        date: prefillData.date || prev.date,
+      }));
     }
-  }, [initialData]);
+  }, [initialData, prefillData]);
 
   const addParticipant = () => {
     if (socios.length > 0) {
@@ -111,6 +129,7 @@ export function ExpenseForm({
       quantity: parseFloat(form.quantity) || 1,
       file_url: form.link || null,
       label: 'Comprovante',
+      shopping_item_id: prefillData?.shopping_item_id || null, // pass if available
       participants: participants.map(p => ({
         user_id: p.user_id,
         amount_paid: p.amount_paid

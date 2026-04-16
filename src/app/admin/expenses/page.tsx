@@ -64,11 +64,20 @@ export default function AdminExpensesPage() {
 
   // Sync sidebar navigation / query params with local state
   useEffect(() => {
-    if (searchParams.get('new') === 'true') {
+    if (searchParams.get('new') === 'true' || searchParams.has('shoppingItemId')) {
       setShowForm(true);
       setEditingExpense(null);
     }
   }, [searchParams]);
+
+  const prefillData = searchParams.has('shoppingItemId') ? {
+    supplier: searchParams.get('description') || '',
+    desc: 'Registrado via Lista de Compras',
+    cat: searchParams.get('category') || 'Material',
+    shopping_item_id: searchParams.get('shoppingItemId') || undefined,
+    amount: searchParams.get('amount') || undefined,
+    date: searchParams.get('date') || undefined
+  } : null;
 
   const handleSubmit = async (payload: any) => {
     setSubmitting(true);
@@ -95,12 +104,21 @@ export default function AdminExpensesPage() {
         throw new Error(data.error || 'Erro ao salvar despesa');
       }
 
+      // Mark shopping item as 'Comprado' if linked
+      if (payload.shopping_item_id) {
+        await fetch(`/api/shopping-list/${payload.shopping_item_id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'Comprado' })
+        }).catch(err => console.error('Failed to update shopping item status', err));
+      }
+
       showToast(editingExpense ? 'Despesa atualizada com sucesso!' : 'Nova despesa cadastrada!');
       setShowForm(false);
       setEditingExpense(null);
       
       // Clean up the URL if we were on ?new=true
-      if (searchParams.get('new')) {
+      if (searchParams.get('new') || searchParams.has('shoppingItemId')) {
         router.push('/admin/expenses');
       }
       
@@ -136,7 +154,7 @@ export default function AdminExpensesPage() {
   const handleCancel = () => {
     setShowForm(false);
     setEditingExpense(null);
-    if (searchParams.get('new')) {
+    if (searchParams.get('new') || searchParams.has('shoppingItemId')) {
       router.push('/admin/expenses');
     }
   };
@@ -208,6 +226,7 @@ export default function AdminExpensesPage() {
       {showForm && (
         <ExpenseForm
           initialData={editingExpense}
+          prefillData={prefillData}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           submitting={submitting}
@@ -251,6 +270,16 @@ export default function AdminExpensesPage() {
                </div>
             </div>
             <div className="flex flex-col sm:flex-row flex-wrap gap-3 w-full md:w-auto md:justify-end">
+              <button
+                onClick={() => setCategoryFilter(categoryFilter === 'Mão de Obra' ? '' : 'Mão de Obra')}
+                className={`px-3 py-2 rounded-architectural text-[10px] font-bold uppercase tracking-wider transition-all border ${
+                  categoryFilter === 'Mão de Obra'
+                    ? 'bg-primary/10 border-primary/20 text-primary'
+                    : 'bg-surface-low border-ghost-border text-tertiary hover:border-tertiary/30'
+                }`}
+              >
+                Filtrar Pedreiros
+              </button>
               <div className="relative flex-grow sm:flex-grow-0 sm:min-w-[200px]">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary opacity-50" />
                 <input

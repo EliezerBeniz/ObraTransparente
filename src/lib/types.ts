@@ -70,3 +70,55 @@ export interface ProjectDocument {
   description: string | null;
   created_at: string;
 }
+
+export interface Worker {
+  id: string;
+  name: string;
+  phone: string | null;
+  specialty: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface WorkerPayment {
+  id: string;
+  worker_id: string;
+  expense_id: string | null;
+  amount: number;
+  date: string;
+  payment_type: 'Diária' | 'Empreitada' | 'Outro';
+  status: 'Pendente' | 'Pago';
+  description: string | null;
+  created_at: string;
+  worker?: Worker;
+}
+
+export interface ToolLending {
+  id: string;
+  tool_description: string;
+  worker_id: string | null;
+  borrower_name: string | null;
+  lend_date: string;
+  expected_return_date: string | null;
+  actual_return_date: string | null;
+  status: 'Pendente' | 'Devolvido' | 'Extraviado';
+  photo_links: string[] | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  worker?: Worker;
+}
+
+export interface ShoppingItem {
+  id: string;
+  title: string;
+  description: string | null;
+  quantity_text: string | null;
+  estimated_amount: number | null;
+  expected_date: string;
+  category: string | null;
+  status: 'Pendente' | 'Comprado' | 'Cancelado';
+  expense_id: string | null;
+  created_by: string | null;
+  created_at: string;
+}

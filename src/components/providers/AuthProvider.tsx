@@ -123,8 +123,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       // Create a timeout promise to ensure we don't hang if Supabase is unresponsive
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Sign out timeout')), 2000)
+      const timeoutPromise = new Promise((resolve) => 
+        setTimeout(() => resolve('timeout'), 2000)
       );
       
       // Execute sign out with a 2 second timeout FIRST
@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.clear();
       sessionStorage.clear();
     } catch (error) {
-      console.error('Error during sign out (proceeding anyway):', error);
+      console.warn('Alerta visual durante logout ignorado:', error);
       localStorage.clear();
       sessionStorage.clear();
     } finally {
