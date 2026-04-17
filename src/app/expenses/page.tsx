@@ -6,12 +6,14 @@ import { ExpenseWithAttachments, Profile } from '@/lib/types';
 import { formatCurrency, formatDate, exportToCSV } from '@/lib/utils';
 import { ExpenseList } from '@/components/ExpenseList';
 import { ReportPrintView } from '@/components/ReportPrintView';
+import { Advance } from '@/lib/finance';
 
 export default function ExpensesPage() {
   const categories = ["Todos", "Material", "Mão de Obra", "Projetos", "Legal", "Outros"];
   const [activeCategory, setActiveCategory] = useState("Todos");
   const [expenses, setExpenses] = useState<ExpenseWithAttachments[]>([]);
   const [socios, setSocios] = useState<Profile[]>([]);
+  const [advances, setAdvances] = useState<Advance[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [datePreset, setDatePreset] = useState(""); // '', '30', '60', '90', 'custom'
@@ -22,9 +24,10 @@ export default function ExpensesPage() {
 
   const fetchExpenses = useCallback(async () => {
     try {
-      const [res, sociosRes] = await Promise.all([
+      const [res, sociosRes, advancesRes] = await Promise.all([
         fetch('/api/expenses'),
-        fetch('/api/socios')
+        fetch('/api/socios'),
+        fetch('/api/advances')
       ]);
       if (res.ok) {
         const data = await res.json();
@@ -38,8 +41,11 @@ export default function ExpensesPage() {
         });
         setSocios(sociosData);
       }
+      if (advancesRes.ok) {
+        setAdvances(await advancesRes.json());
+      }
     } catch (error) {
-      console.error('Failed to fetch expenses', error);
+      console.error('Failed to fetch data', error);
     } finally {
       setLoading(false);
     }
@@ -198,6 +204,7 @@ export default function ExpensesPage() {
         <ReportPrintView 
           expenses={filteredExpenses} 
           socios={socios} 
+          advances={advances}
           onClose={() => setShowReport(false)} 
           filtersInfo={{ 
             category: activeCategory === "Todos" ? "" : activeCategory, 

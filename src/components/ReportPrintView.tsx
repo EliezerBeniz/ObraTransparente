@@ -1,12 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ExpenseWithAttachments, Profile } from '@/lib/types';
-import { calculateProjectBalance } from '@/lib/finance';
+import { calculateProjectBalance, Advance } from '@/lib/finance';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { ArrowRightLeft, Printer, X } from 'lucide-react';
 
 interface ReportPrintViewProps {
   expenses: ExpenseWithAttachments[];
   socios: Profile[];
+  advances: Advance[];
   onClose: () => void;
   filtersInfo: {
     category: string;
@@ -17,8 +19,19 @@ interface ReportPrintViewProps {
   };
 }
 
-export function ReportPrintView({ expenses, socios, onClose, filtersInfo }: ReportPrintViewProps) {
-  const balance = useMemo(() => calculateProjectBalance(expenses, socios), [expenses, socios]);
+export function ReportPrintView({ expenses, socios, advances, onClose, filtersInfo }: ReportPrintViewProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
+  const balance = useMemo(() => calculateProjectBalance(expenses, socios, advances), [expenses, socios, advances]);
 
   const totalPaid = useMemo(() => 
     expenses.filter(e => e.status === 'Pago').reduce((sum, e) => sum + Number(e.amount), 0),
@@ -32,13 +45,24 @@ export function ReportPrintView({ expenses, socios, onClose, filtersInfo }: Repo
 
   const totalGeral = totalPaid + totalPending;
 
+  const filteredAdvances = useMemo(() => {
+    return advances.filter(adv => {
+      if (!filtersInfo.startDate && !filtersInfo.endDate) return true;
+      const advDate = new Date(adv.date);
+      if (filtersInfo.startDate && advDate < new Date(filtersInfo.startDate)) return false;
+      if (filtersInfo.endDate && advDate > new Date(filtersInfo.endDate)) return false;
+      return true;
+    });
+  }, [advances, filtersInfo.startDate, filtersInfo.endDate]);
+
   const handlePrint = () => {
     window.print();
   };
 
   const formattedPreset = () => {
+    const shortDate = (d: string) => new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
     if (filtersInfo.datePreset === 'custom') {
-      return `${formatDate(filtersInfo.startDate)} até ${formatDate(filtersInfo.endDate)}`;
+      return `${shortDate(filtersInfo.startDate)} a ${shortDate(filtersInfo.endDate)}`;
     }
     const presets: Record<string, string> = {
       '30': 'Últimos 30 dias',
@@ -48,10 +72,51 @@ export function ReportPrintView({ expenses, socios, onClose, filtersInfo }: Repo
     return presets[filtersInfo.datePreset] || 'Todo o período';
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-surface-lowest/80 backdrop-blur-sm print:bg-white print:overflow-visible print:absolute">
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] overflow-y-auto bg-surface-lowest/80 backdrop-blur-sm print:bg-white print:overflow-visible print:absolute report-print-wrapper">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          @page {
+            size: A4;
+            margin: 15mm;
+          }
+          
+          /* Hide EVERYTHING under body first */
+          body > * {
+            display: none !important;
+          }
+          
+          /* Show ONLY our portal container */
+          body > .report-print-wrapper {
+            display: block !important;
+            position: relative !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: auto !important;
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+          }
+
+          .print-container {
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            height: auto !important;
+            min-height: auto !important;
+            position: relative !important;
+          }
+        }
+      `}} />
+      
       {/* Container aligned mostly like a paper page */}
-      <div className="min-h-screen bg-white text-black md:max-w-4xl mx-auto md:my-8 shadow-2xl print:shadow-none print:max-w-full print:m-0 print:p-0">
+      <div className="min-h-screen bg-white text-black md:max-w-4xl mx-auto md:my-8 shadow-2xl print:shadow-none print:max-w-full print:m-0 print:p-0 print-container">
         
         {/* ACTION BAR - HIDDEN ON PRINT */}
         <div className="sticky top-0 bg-surface-low border-b border-ghost-border p-4 flex justify-between items-center print:hidden rounded-t-lg">
@@ -71,7 +136,7 @@ export function ReportPrintView({ expenses, socios, onClose, filtersInfo }: Repo
            <div className="mb-8 border-b-2 border-black pb-4 flex flex-col md:flex-row justify-between md:items-end gap-4">
              <div>
                <h1 className="text-3xl font-heading font-bold uppercase mb-2">Relatório de Despesas</h1>
-               <p className="text-sm">Emitido em: {new Date().toLocaleString()}</p>
+               <p className="text-sm">Emitido em: {new Date().toLocaleDateString('pt-BR')} {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
              </div>
              <div className="text-left md:text-right text-sm">
                <p><strong>Status:</strong> {filtersInfo.status || 'Todos'}</p>
@@ -156,7 +221,7 @@ export function ReportPrintView({ expenses, socios, onClose, filtersInfo }: Repo
                <thead>
                  <tr className="border-b-2 border-gray-400">
                    <th className="py-2">Data</th>
-                   <th className="py-2">Categoria</th>
+                   <th className="py-2">Cat.</th>
                    <th className="py-2">Descrição</th>
                    <th className="py-2">Status</th>
                    <th className="py-2 text-right">Valor Total</th>
@@ -165,13 +230,15 @@ export function ReportPrintView({ expenses, socios, onClose, filtersInfo }: Repo
                <tbody className="divide-y divide-gray-300">
                  {expenses.map(expense => (
                    <tr key={expense.id}>
-                     <td className="py-2 pr-2 whitespace-nowrap">{formatDate(expense.date)}</td>
-                     <td className="py-2 pr-2">{expense.category}</td>
+                     <td className="py-2 pr-2 whitespace-nowrap text-xs">
+                       {new Date(expense.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                     </td>
+                     <td className="py-2 pr-2 text-xs">{expense.category}</td>
                      <td className="py-2 pr-2">
                         {expense.title}
                         {expense.quantity && expense.quantity > 1 && ` (${expense.quantity} un)`}
                      </td>
-                     <td className="py-2 pr-2">{expense.status}</td>
+                     <td className="py-2 pr-2 text-xs">{expense.status}</td>
                      <td className="py-2 text-right font-medium">{formatCurrency(expense.amount)}</td>
                    </tr>
                  ))}
@@ -179,11 +246,46 @@ export function ReportPrintView({ expenses, socios, onClose, filtersInfo }: Repo
              </table>
            </section>
 
+           <section className="mt-12">
+             <h2 className="text-lg font-bold uppercase border-b border-gray-300 pb-2 mb-4">Detalhamento dos Aportes ({filteredAdvances.length})</h2>
+             {filteredAdvances.length > 0 ? (
+               <table className="w-full text-left text-sm border-collapse">
+                 <thead>
+                   <tr className="border-b-2 border-gray-400">
+                     <th className="py-2">Data</th>
+                     <th className="py-2">Sócio</th>
+                     <th className="py-2">Descrição</th>
+                     <th className="py-2 text-right">Valor</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-gray-300">
+                   {filteredAdvances.map(advance => (
+                     <tr key={advance.id}>
+                       <td className="py-2 pr-2 whitespace-nowrap text-xs">
+                         {new Date(advance.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                       </td>
+                       <td className="py-2 pr-2 text-[12px]">{socios.find(s => s.id === advance.user_id)?.full_name || 'Sócio'}</td>
+                       <td className="py-2 pr-2 text-[12px]">{advance.description || 'Aporte para o caixa'}</td>
+                       <td className="py-2 text-right font-medium">{formatCurrency(advance.amount)}</td>
+                     </tr>
+                   ))}
+                   <tr className="border-t-2 border-black font-bold">
+                     <td colSpan={3} className="py-2 text-right uppercase text-xs">Total de Aportes no Período:</td>
+                     <td className="py-2 text-right">{formatCurrency(filteredAdvances.reduce((sum, a) => sum + Number(a.amount), 0))}</td>
+                   </tr>
+                 </tbody>
+               </table>
+             ) : (
+               <p className="text-sm text-gray-500 italic">Nenhum aporte registrado para este período.</p>
+             )}
+           </section>
+
            <div className="text-xs text-center text-gray-500 mt-12 pt-4 border-t border-gray-300 print:block">
              Gerado através do Sistema de Transparência
            </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

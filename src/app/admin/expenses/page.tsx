@@ -8,10 +8,12 @@ import { ExpenseList } from '@/components/ExpenseList';
 import { ExpenseForm } from '@/components/ExpenseForm';
 import { ReportPrintView } from '@/components/ReportPrintView';
 import { exportToCSV } from '@/lib/utils';
+import { Advance } from '@/lib/finance';
 
 export default function AdminExpensesPage() {
   const [expenses, setExpenses] = useState<ExpenseWithAttachments[]>([]);
   const [socios, setSocios] = useState<Profile[]>([]);
+  const [advances, setAdvances] = useState<Advance[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -35,9 +37,10 @@ export default function AdminExpensesPage() {
 
   const fetchExpenses = useCallback(async () => {
     try {
-      const [res, sociosRes] = await Promise.all([
+      const [res, sociosRes, advancesRes] = await Promise.all([
         fetch('/api/expenses'),
-        fetch('/api/socios')
+        fetch('/api/socios'),
+        fetch('/api/advances')
       ]);
       if (res.ok) {
         const data = await res.json();
@@ -51,8 +54,11 @@ export default function AdminExpensesPage() {
         });
         setSocios(sociosData);
       }
+      if (advancesRes.ok) {
+        setAdvances(await advancesRes.json());
+      }
     } catch (error) {
-      console.error('Failed to fetch expenses', error);
+      console.error('Failed to fetch data', error);
     } finally {
       setLoading(false);
     }
@@ -357,6 +363,7 @@ export default function AdminExpensesPage() {
         <ReportPrintView 
           expenses={filteredExpenses} 
           socios={socios} 
+          advances={advances}
           onClose={() => setShowReport(false)} 
           filtersInfo={{ category: categoryFilter, status: statusFilter, datePreset, startDate, endDate }}
         />
