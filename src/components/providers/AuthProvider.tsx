@@ -44,19 +44,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from('user_roles')
           .select('role')
           .eq('user_id', userId)
-          .limit(1);
+          .maybeSingle(); // Better than limit(1) for single result
         
         if (error) {
           console.error('Role fetch error:', error);
           return 'viewer';
         }
 
-        if (!data || data.length === 0) {
+        if (!data) {
           console.warn('No role mapping found for user:', userId);
           return 'viewer';
         }
 
-        const userRole = data[0].role?.trim()?.toLowerCase();
+        const userRole = data.role?.trim()?.toLowerCase();
         console.debug('Resolved role for', userId, ':', userRole);
         
         if (userRole === 'admin') return 'admin';
@@ -68,48 +68,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    async function initializeAuth() {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const initialUser = session?.user || null;
-        
-        if (mounted) {
-          setUser(initialUser);
-          if (initialUser) {
-            const role = await checkRole(initialUser.id);
-            if (mounted) setRole(role);
-          } else {
-            if (mounted) setRole(null);
-          }
-        }
-      } catch (err) {
-        console.error('Auth initialization error:', err);
-      } finally {
-        if (mounted) setLoading(false);
-        clearTimeout(timeoutId);
-      }
-    }
-
-    initializeAuth();
-
+    // Single source of truth for Auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const newUser = session?.user || null;
-      console.debug('Auth state change:', event, newUser?.email);
+      console.debug('Auth event:', event, newUser?.email);
       
-      if (newUser) {
+      if (mounted) {
         setUser(newUser);
-        const role = await checkRole(newUser.id);
-        if (mounted) {
-          setRole(role);
-          setLoading(false);
-          console.debug('Role updated from event:', role);
-        }
-      } else {
-        if (mounted) {
-          setUser(null);
+        
+        if (newUser) {
+          // Fetch role only if we have a user
+          const role = await checkRole(newUser.id);
+          if (mounted) {
+            setRole(role);
+            setLoading(false);
+          }
+        } else {
           setRole(null);
           setLoading(false);
         }
+        
+        clearTimeout(timeoutId);
       }
     });
 

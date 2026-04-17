@@ -64,7 +64,7 @@ export async function updateSession(request: NextRequest) {
 
   const isLoginPage = request.nextUrl.pathname === '/'
   const isAuthCallback = request.nextUrl.pathname.startsWith('/auth')
-  const isStaticFile = request.nextUrl.pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/)
+  const isStaticFile = request.nextUrl.pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js|json|webmanifest)$/)
 
   // 1. Se NÃO estiver logado e NÃO estiver na login (/) ou callback
   if (!user && !isLoginPage && !isAuthCallback && !isStaticFile) {
