@@ -38,9 +38,9 @@ function MiniDonut({ segments }: { segments: { label: string; value: number; col
   const hov = hovered !== null ? slices[hovered] : null;
 
   return (
-    <div className="flex items-center gap-5">
-      <div className="relative shrink-0" style={{ width: 128, height: 128 }}>
-        <svg width={128} height={128}>
+    <div className="flex flex-col sm:flex-row items-center sm:items-start sm:py-2 gap-6 sm:gap-8">
+      <div className="relative shrink-0" style={{ width: 140, height: 140 }}>
+        <svg width={140} height={140} viewBox="0 0 128 128" className="overflow-visible">
           {slices.map((s, i) => (
             <circle key={i} cx={cx} cy={cy} r={r} fill="none"
               stroke={s.color} strokeWidth={hovered === i ? 16 : 13}
@@ -59,7 +59,7 @@ function MiniDonut({ segments }: { segments: { label: string; value: number; col
           </text>
         </svg>
       </div>
-      <div className="space-y-1.5 flex-1 min-w-0">
+      <div className="space-y-2.5 flex-1 w-full sm:w-auto min-w-0">
         {slices.map((s, i) => (
           <div key={i} className="flex items-center justify-between gap-2 cursor-default"
             onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
@@ -305,9 +305,13 @@ export default function Dashboard() {
           ) : (
             <p className="text-sm text-tertiary text-center py-6">Sem despesas pagas registradas</p>
           )}
-          <div className="pt-2 border-t border-ghost-border/50 flex items-center justify-between text-[10px] text-tertiary font-body">
-            <span>Total Pago: <strong className="text-foreground font-heading">{formatCurrency(totalInvested)}</strong></span>
-            <span>Pendente: <strong className="text-amber-500 font-heading">{formatCurrency(totalPending)}</strong></span>
+          <div className="pt-4 border-t border-ghost-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[10px] text-tertiary font-body">
+            <span className="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-2">
+              Total Pago: <strong className="text-foreground font-heading text-xs">{formatCurrency(totalInvested)}</strong>
+            </span>
+            <span className="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-2">
+              Pendente: <strong className="text-amber-500 font-heading text-xs">{formatCurrency(totalPending)}</strong>
+            </span>
           </div>
         </section>
       </div>
