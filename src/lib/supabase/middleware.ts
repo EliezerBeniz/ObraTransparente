@@ -73,8 +73,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // 2. Se ESTIVER logado e estiver na login (/)
-  if (user && isLoginPage) {
+  // 2. Se ESTIVER logado e estiver na login (/) e não estiver explicitamente deslogando
+  if (user && isLoginPage && !request.nextUrl.searchParams.has('logout')) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

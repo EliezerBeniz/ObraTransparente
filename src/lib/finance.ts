@@ -15,6 +15,7 @@ export interface SocioBalance {
   expected: number;     // Fair share
   net: number;          // paid - expected. Positive = should receive, Negative = should pay
   advancesTotal: number;
+  advances: Advance[];
 }
 
 export interface SettlementInstruction {
@@ -79,25 +80,27 @@ export function calculateProjectBalance(
   });
 
   // 2. Calculate advance contributions per socio
-  const advancesMap: Record<string, number> = {};
-  socios.forEach(s => { advancesMap[s.id] = 0; });
+  const socioAdvancesMap: Record<string, Advance[]> = {};
+  socios.forEach(s => { socioAdvancesMap[s.id] = []; });
 
   advances.forEach(adv => {
-    if (advancesMap[adv.user_id] !== undefined) {
-      advancesMap[adv.user_id] += Number(adv.amount);
+    if (socioAdvancesMap[adv.user_id] !== undefined) {
+      socioAdvancesMap[adv.user_id].push(adv);
     }
   });
 
   // 3. Build socio balances — total paid = direct + advances
   const socioBalances: SocioBalance[] = socios.map(s => {
     const direct = directPaidMap[s.id] || 0;
-    const advancesTotal = advancesMap[s.id] || 0;
+    const socioAdvances = socioAdvancesMap[s.id] || [];
+    const advancesTotal = socioAdvances.reduce((sum, a) => sum + Number(a.amount), 0);
     const paid = direct + advancesTotal;
     return {
       id: s.id,
       name: s.full_name || 'Sócio',
       paid,
       advancesTotal,
+      advances: socioAdvances,
       expected: avgPerSocio,
       net: paid - avgPerSocio,
     };

@@ -10,7 +10,10 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   PiggyBank,
-  Receipt
+  Receipt,
+  ChevronDown,
+  ChevronUp,
+  CalendarDays
 } from "lucide-react";
 import { formatCurrency } from '@/lib/utils';
 import { ExpenseWithAttachments, Profile } from '@/lib/types';
@@ -19,6 +22,11 @@ import { calculateProjectBalance, ProjectBalance, Advance } from '@/lib/finance'
 export default function BalancoPage() {
   const [balance, setBalance] = useState<ProjectBalance | null>(null);
   const [loading, setLoading] = useState(true);
+  const [expandedSocios, setExpandedSocios] = useState<Record<string, boolean>>({});
+
+  const toggleSocio = (id: string) => {
+    setExpandedSocios(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const fetchData = useCallback(async () => {
     try {
@@ -140,9 +148,43 @@ export default function BalancoPage() {
                     />
                   </div>
                   {(socio as any).advancesTotal > 0 && (
-                    <p className="text-[10px] text-tertiary font-body">
-                      Inclui <strong>{formatCurrency((socio as any).advancesTotal)}</strong> em aportes ao Caixa
-                    </p>
+                    <div className="pt-2">
+                      <button 
+                        onClick={() => toggleSocio(socio.id)}
+                        className="flex items-center gap-2 text-[10px] text-tertiary font-body hover:text-primary transition-colors group/btn"
+                      >
+                        <span>
+                          Inclui <strong>{formatCurrency((socio as any).advancesTotal)}</strong> em aportes ao Caixa
+                        </span>
+                        {expandedSocios[socio.id] ? <ChevronUp size={14} /> : <ChevronDown size={14} className="group-hover/btn:translate-y-0.5 transition-transform" />}
+                      </button>
+
+                      {/* Dropdown Content */}
+                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedSocios[socio.id] ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                        <div className="bg-surface-low/50 rounded-lg border border-ghost-border p-3 space-y-3">
+                          <h5 className="text-[9px] uppercase tracking-widest font-bold text-tertiary flex items-center gap-2">
+                            <Receipt size={12} />
+                            Histórico de Aportes
+                          </h5>
+                          <div className="space-y-2">
+                            {socio.advances.map((adv) => (
+                              <div key={adv.id} className="flex items-center justify-between text-[11px] bg-surface-lowest p-2 rounded border border-ghost-border/50">
+                                <div className="flex items-center gap-2 text-tertiary">
+                                  <CalendarDays size={12} />
+                                  <span>{new Date(adv.date + 'T12:00:00').toLocaleDateString('pt-BR')}</span>
+                                </div>
+                                <span className="flex-1 px-3 text-foreground italic truncate max-w-[150px]">
+                                  {adv.description || 'Aporte ao Caixa'}
+                                </span>
+                                <span className="font-bold text-secondary">
+                                  {formatCurrency(adv.amount)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>

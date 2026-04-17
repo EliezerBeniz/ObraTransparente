@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       sessionStorage.clear();
     } finally {
       // ALWAYS redirect, even if API fails or hangs
-      window.location.href = '/';
+      window.location.href = '/?logout=1';
     }
   };
 
