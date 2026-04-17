@@ -89,7 +89,7 @@ export async function PUT(
     await supabase.from('expense_participants').delete().eq('expense_id', id)
     
     if (!paid_from_fund && participants && participants.length > 0) {
-      const participantsData = participants.map(p => ({
+      const participantsData = participants.map((p: any) => ({
         expense_id: id,
         user_id: p.user_id,
         amount_paid: p.amount_paid,

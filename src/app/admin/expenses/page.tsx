@@ -160,7 +160,8 @@ export default function AdminExpensesPage() {
   };
 
   const filteredExpenses = expenses.filter(expense => {
-    const matchesSearch = expense.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = expense.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         (expense.supplier && expense.supplier.name && expense.supplier.name.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus = statusFilter ? expense.status === statusFilter : true;
     const matchesCategory = categoryFilter ? expense.category === categoryFilter : true;
     

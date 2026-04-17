@@ -20,6 +20,18 @@ interface ReportPrintViewProps {
 export function ReportPrintView({ expenses, socios, onClose, filtersInfo }: ReportPrintViewProps) {
   const balance = useMemo(() => calculateProjectBalance(expenses, socios), [expenses, socios]);
 
+  const totalPaid = useMemo(() => 
+    expenses.filter(e => e.status === 'Pago').reduce((sum, e) => sum + Number(e.amount), 0),
+    [expenses]
+  );
+
+  const totalPending = useMemo(() => 
+    expenses.filter(e => e.status === 'Pendente').reduce((sum, e) => sum + Number(e.amount), 0),
+    [expenses]
+  );
+
+  const totalGeral = totalPaid + totalPending;
+
   const handlePrint = () => {
     window.print();
   };
@@ -70,20 +82,36 @@ export function ReportPrintView({ expenses, socios, onClose, filtersInfo }: Repo
 
            <section className="mb-10">
              <h2 className="text-lg font-bold uppercase border-b border-gray-300 pb-2 mb-4">Resumo Financeiro do Período</h2>
-             <div className="grid grid-cols-2 gap-4 mb-6">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="p-4 border border-gray-400 rounded">
-                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">Total de Gastos (Filtro)</p>
-                  <p className="text-2xl font-bold">{formatCurrency(balance.totalProject)}</p>
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Total Pago (Realizado)</p>
+                  <p className="text-xl font-bold text-green-700">{formatCurrency(totalPaid)}</p>
                 </div>
                 <div className="p-4 border border-gray-400 rounded">
-                  <p className="text-xs uppercase font-bold text-gray-500 mb-1">Cota Ideal por Sócio</p>
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Total Pendente (Projetado)</p>
+                  <p className="text-xl font-bold text-amber-700">{formatCurrency(totalPending)}</p>
+                </div>
+                <div className="p-4 border border-gray-400 rounded bg-gray-50">
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Total Geral (Filtrado)</p>
+                  <p className="text-xl font-bold">{formatCurrency(totalGeral)}</p>
+                </div>
+             </div>
+
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div className="p-4 border border-black rounded bg-gray-50">
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Base para Acerto de Contas</p>
+                  <p className="text-2xl font-bold">{formatCurrency(balance.totalProject)}</p>
+                  <p className="text-[10px] text-gray-500 mt-1 italic">* Inclui despesas pendentes neste relatório.</p>
+                </div>
+                <div className="p-4 border border-gray-400 rounded">
+                  <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Cota Ideal por Sócio</p>
                   <p className="text-2xl font-bold">{formatCurrency(balance.avgPerSocio)}</p>
                 </div>
              </div>
 
              {/* Participants Balance for period */}
              <div className="space-y-4">
-                <h3 className="font-bold text-sm uppercase">Participação Fechada (Somente Sócios)</h3>
+                <h3 className="font-bold text-sm uppercase">Participação no Custo Total (Incluso Pendentes)</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {balance.socioBalances.map(socio => (
                     <div key={socio.id} className="p-3 border border-gray-300 rounded text-sm flex flex-col justify-between">
@@ -94,8 +122,8 @@ export function ReportPrintView({ expenses, socios, onClose, filtersInfo }: Repo
                          </span>
                        </div>
                        <div className="flex justify-between text-xs text-gray-600 mb-1">
-                         <span>Pago: {formatCurrency(socio.paid)}</span>
-                         <span>Meta: {formatCurrency(socio.expected)}</span>
+                         <span>Já Pago: {formatCurrency(socio.paid)}</span>
+                         <span>Meta Total: {formatCurrency(socio.expected)}</span>
                        </div>
                     </div>
                   ))}
@@ -105,16 +133,19 @@ export function ReportPrintView({ expenses, socios, onClose, filtersInfo }: Repo
             {/* Settlements for period */}
             {balance.instructions.length > 0 && (
              <div className="mt-6 p-4 bg-gray-100 rounded border border-gray-300">
-                <h3 className="font-bold text-sm uppercase mb-3 flex gap-2 items-center"><ArrowRightLeft size={16} /> Acerto de Contas do Período</h3>
+                <h3 className="font-bold text-sm uppercase mb-3 flex gap-2 items-center"><ArrowRightLeft size={16} /> Estimativa de Acerto de Contas</h3>
                 <div className="space-y-2">
                   {balance.instructions.map((ins, i) => (
                     <div key={i} className="flex justify-between items-center text-sm py-1 border-b border-gray-200 last:border-0 pl-1">
-                      <span><strong>{ins.fromName}</strong> paga para</span>
+                      <span><strong>{ins.fromName}</strong> deve pagar</span>
                       <span className="font-bold">{formatCurrency(ins.amount)}</span>
-                      <span><strong>{ins.toName}</strong></span>
+                      <span>para <strong>{ins.toName}</strong></span>
                     </div>
                   ))}
                 </div>
+                <p className="text-[10px] text-gray-500 mt-4 italic">
+                  Nota: Este acerto considera que todos os valores pendentes listados serão pagos conforme o valor informado.
+                </p>
              </div>
             )}
            </section>

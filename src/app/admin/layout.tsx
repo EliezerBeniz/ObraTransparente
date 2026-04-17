@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, LogOut, FileText, Settings, Users, Store, FolderOpen, Clock, Camera, Hammer, Wrench, ShoppingBag, Wallet, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, LogOut, FileText, Settings, Users, Store, FolderOpen, Clock, Camera, Hammer, Wrench, ShoppingBag, Wallet, ChevronRight, BarChart3 } from 'lucide-react';
 
 import { useAuth } from '@/components/providers/AuthProvider';
 
@@ -71,6 +71,11 @@ export default function AdminLayout({
 
         <nav className="flex-1 p-4 space-y-6 overflow-y-auto custom-scrollbar">
           {/* Categoria: Financeiro */}
+          <div className="space-y-1">
+            <p className="px-4 text-[10px] uppercase tracking-[0.15em] font-heading text-tertiary/60 font-black mb-3">Visão Geral</p>
+            <SidebarLink href="/admin/overview" icon={BarChart3} label="Dashboard" color="text-primary" />
+          </div>
+
           <div className="space-y-1">
             <p className="px-4 text-[10px] uppercase tracking-[0.15em] font-heading text-tertiary/60 font-black mb-3">Financeiro</p>
             <SidebarLink href="/admin/expenses" icon={FileText} label="Gerenciar Despesas" />

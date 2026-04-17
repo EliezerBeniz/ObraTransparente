@@ -34,6 +34,8 @@ export interface Expense {
   created_by: string | null;
   created_at: string;
   paid_from_fund?: boolean;
+  supplier_id?: string | null;
+  supplier?: { name: string } | null;
 }
 
 export interface Attachment {
