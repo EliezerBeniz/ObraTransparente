@@ -54,16 +54,18 @@ export async function PUT(
 
   try {
     const body = await request.json()
-    const { title, description, amount, date, category, status, quantity, file_url, label, participants } = body
+    const { title, description, amount, date, category, status, quantity, file_url, label, participants, paid_from_fund } = body
 
-    // Participants Validation
-    if (!participants || !Array.isArray(participants) || participants.length === 0) {
-      return NextResponse.json({ error: 'Ao menos um pagador (sócio) deve ser informado.' }, { status: 400 })
-    }
+    if (!paid_from_fund) {
+      // Participants Validation
+      if (!participants || !Array.isArray(participants) || participants.length === 0) {
+        return NextResponse.json({ error: 'Ao menos um pagador (sócio) deve ser informado.' }, { status: 400 })
+      }
 
-    const participantsSum = participants.reduce((acc, p) => acc + Number(p.amount_paid), 0)
-    if (Math.abs(participantsSum - Number(amount)) > 0.01) {
-      return NextResponse.json({ error: `A soma dos pagamentos (R$ ${participantsSum}) não bate com o total (R$ ${amount}).` }, { status: 400 })
+      const participantsSum = participants.reduce((acc, p) => acc + Number(p.amount_paid), 0)
+      if (Math.abs(participantsSum - Number(amount)) > 0.01) {
+        return NextResponse.json({ error: `A soma dos pagamentos (R$ ${participantsSum}) não bate com o total (R$ ${amount}).` }, { status: 400 })
+      }
     }
 
     // Update expense
@@ -76,26 +78,30 @@ export async function PUT(
         date,
         category,
         status,
-        quantity: Number(quantity) || 1
+        quantity: Number(quantity) || 1,
+        paid_from_fund: !!paid_from_fund
       })
       .eq('id', id)
 
     if (expenseError) throw expenseError
 
-    // Sync Participants: Delete old, Insert new
+    // Sync Participants: Delete old, Insert new only if not from fund
     await supabase.from('expense_participants').delete().eq('expense_id', id)
     
-    const participantsData = participants.map(p => ({
-      expense_id: id,
-      user_id: p.user_id,
-      amount_paid: p.amount_paid
-    }))
+    if (!paid_from_fund && participants && participants.length > 0) {
+      const participantsData = participants.map(p => ({
+        expense_id: id,
+        user_id: p.user_id,
+        amount_paid: p.amount_paid,
+        receipt_url: (p as any).receipt_url || null
+      }))
 
-    const { error: participantsError } = await supabase
-      .from('expense_participants')
-      .insert(participantsData)
+      const { error: participantsError } = await supabase
+        .from('expense_participants')
+        .insert(participantsData)
 
-    if (participantsError) throw participantsError
+      if (participantsError) throw participantsError
+    }
 
     // Handle attachment logic
     // First clear old attachments

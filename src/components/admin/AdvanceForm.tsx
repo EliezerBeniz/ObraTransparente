@@ -6,17 +6,25 @@ import { Save, X } from 'lucide-react';
 
 interface AdvanceFormProps {
   socios: Profile[];
-  onSubmit: (data: { user_id: string; amount: number; date: string; description: string }) => Promise<void>;
+  onSubmit: (data: { user_id: string; amount: number; date: string; description: string; receipt_url: string }) => Promise<void>;
   onCancel: () => void;
   submitting: boolean;
+  initialData?: {
+    user_id: string;
+    amount: number;
+    date: string;
+    description: string | null;
+    receipt_url?: string | null;
+  };
 }
 
-export function AdvanceForm({ socios, onSubmit, onCancel, submitting }: AdvanceFormProps) {
+export function AdvanceForm({ socios, onSubmit, onCancel, submitting, initialData }: AdvanceFormProps) {
   const [form, setForm] = useState({
-    user_id: socios[0]?.id || '',
-    amount: '',
-    date: new Date().toISOString().split('T')[0],
-    description: '',
+    user_id: initialData?.user_id || socios[0]?.id || '',
+    amount: initialData?.amount?.toString() || '',
+    date: initialData ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    description: initialData?.description || '',
+    receipt_url: initialData?.receipt_url || '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,13 +34,16 @@ export function AdvanceForm({ socios, onSubmit, onCancel, submitting }: AdvanceF
       amount: parseFloat(form.amount),
       date: form.date,
       description: form.description,
+      receipt_url: form.receipt_url,
     });
   };
 
   return (
     <div className="bg-surface-lowest border border-ghost-border rounded-architectural p-6 md:p-8 animate-[fadeIn_0.2s_ease-out]">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-heading text-foreground">Novo Aporte ao Caixa</h3>
+        <h3 className="text-xl font-heading text-foreground">
+          {initialData ? 'Editar Aporte' : 'Novo Aporte ao Caixa'}
+        </h3>
         <button onClick={onCancel} className="text-tertiary hover:text-foreground transition-colors">
           <X size={20} />
         </button>
@@ -89,6 +100,22 @@ export function AdvanceForm({ socios, onSubmit, onCancel, submitting }: AdvanceF
               className="w-full bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-tertiary/40"
             />
           </div>
+          <div className="md:col-span-2 space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold block">
+              Comprovante de Depósito (Link) *
+            </label>
+            <input
+              type="url"
+              required
+              placeholder="Ex: https://drive.google.com/..."
+              value={form.receipt_url}
+              onChange={(e) => setForm({ ...form, receipt_url: e.target.value })}
+              className="w-full bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-tertiary/40"
+            />
+            <p className="text-[10px] text-tertiary/60 italic font-body">
+              Obrigatório: Anexe o link do comprovante bancário ou recibo em PDF/Imagem.
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-ghost-border">
@@ -102,11 +129,11 @@ export function AdvanceForm({ socios, onSubmit, onCancel, submitting }: AdvanceF
           </button>
           <button
             type="submit"
-            disabled={submitting || !form.user_id || !form.amount || !form.date}
+            disabled={submitting || !form.user_id || !form.amount || !form.date || !form.receipt_url}
             className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-architectural text-sm font-heading hover:bg-primary/90 transition-all shadow-sm active:scale-95 disabled:opacity-50"
           >
             <Save size={16} />
-            {submitting ? 'Salvando...' : 'Registrar Aporte'}
+            {submitting ? 'Salvando...' : (initialData ? 'Salvar Alterações' : 'Registrar Aporte')}
           </button>
         </div>
       </form>

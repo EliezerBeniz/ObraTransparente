@@ -38,6 +38,10 @@ export interface ProjectBalance {
  * Calculates the financial balance between partners.
  * Assuming equal split for all registered socios.
  * 
+ * IMPORTANT: It is recommended to filter expenses by status (e.g. 'Pago') 
+ * before passing them to this function if you intend to calculate a 
+ * settled financial balance.
+ * 
  * Three sources of "who paid":
  * 1. expense_participants — direct partner payments on individual expenses
  * 2. advances — deposits to the common fund (attributed to the depositing partner)

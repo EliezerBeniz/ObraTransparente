@@ -39,11 +39,11 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { user_id, amount, date, description } = body
+    const { user_id, amount, date, description, receipt_url } = body
 
-    if (!user_id || !amount || !date) {
+    if (!user_id || !amount || !date || !receipt_url) {
       return NextResponse.json(
-        { error: 'Sócio, valor e data são obrigatórios.' },
+        { error: 'Sócio, valor, data e comprovante são obrigatórios.' },
         { status: 400 }
       )
     }
@@ -57,7 +57,14 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
       .from('advances')
-      .insert({ user_id, amount: Number(amount), date, description, created_by: user.id })
+      .insert({ 
+        user_id, 
+        amount: Number(amount), 
+        date, 
+        description, 
+        receipt_url,
+        created_by: user.id 
+      })
       .select(`*, profiles!advances_user_id_fkey (full_name)`)
       .single()
 

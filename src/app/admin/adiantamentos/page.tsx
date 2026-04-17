@@ -6,7 +6,8 @@ import { AdvanceForm } from '@/components/admin/AdvanceForm';
 import { Profile } from '@/lib/types';
 import {
   Wallet, TrendingUp, TrendingDown, AlertTriangle,
-  Plus, Trash2, ArrowUpCircle, ArrowDownCircle
+  Plus, Trash2, ArrowUpCircle, ArrowDownCircle,
+  Pencil, Link
 } from 'lucide-react';
 
 interface Advance {
@@ -15,6 +16,7 @@ interface Advance {
   amount: number;
   date: string;
   description: string | null;
+  receipt_url: string | null;
   profiles: { full_name: string | null };
 }
 
@@ -35,6 +37,7 @@ export default function AdminAdvancesPage() {
   const [socios, setSocios] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingAdvance, setEditingAdvance] = useState<Advance | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -56,7 +59,7 @@ export default function AdminAdvancesPage() {
 
       // Filter only expenses paid from fund
       const filtered = Array.isArray(expData)
-        ? expData.filter((e: any) => e.paid_from_fund === true)
+        ? expData.filter((e: any) => e.paid_from_fund === true && e.status === 'Pago')
         : [];
       setFundExpenses(filtered);
 
@@ -83,8 +86,11 @@ export default function AdminAdvancesPage() {
   const handleSubmit = async (data: any) => {
     setSubmitting(true);
     try {
-      const res = await fetch('/api/advances', {
-        method: 'POST',
+      const url = editingAdvance ? `/api/advances/${editingAdvance.id}` : '/api/advances';
+      const method = editingAdvance ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
@@ -94,10 +100,21 @@ export default function AdminAdvancesPage() {
         return;
       }
       setShowForm(false);
+      setEditingAdvance(null);
       await fetchData();
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleEdit = (advance: Advance) => {
+    setEditingAdvance(advance);
+    setShowForm(true);
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingAdvance(null);
   };
 
   const handleDelete = async (id: string) => {
@@ -185,8 +202,15 @@ export default function AdminAdvancesPage() {
           <AdvanceForm
             socios={socios}
             onSubmit={handleSubmit}
-            onCancel={() => setShowForm(false)}
+            onCancel={handleCancel}
             submitting={submitting}
+            initialData={editingAdvance ? {
+              user_id: editingAdvance.user_id,
+              amount: editingAdvance.amount,
+              date: editingAdvance.date,
+              description: editingAdvance.description,
+              receipt_url: editingAdvance.receipt_url
+            } : undefined}
           />
         )}
 
@@ -220,14 +244,34 @@ export default function AdminAdvancesPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
+                        {a.receipt_url && (
+                          <a
+                            href={a.receipt_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 text-secondary hover:text-secondary-container transition-all"
+                            title="Ver comprovante"
+                          >
+                            <Link size={14} />
+                          </a>
+                        )}
                         <span className="font-heading text-green-600 text-sm">{fmt(a.amount)}</span>
-                        <button
-                          onClick={() => handleDelete(a.id)}
-                          className="opacity-0 group-hover:opacity-100 p-1.5 text-tertiary hover:text-red-500 transition-all"
-                          title="Remover aporte"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-all">
+                          <button
+                            onClick={() => handleEdit(a)}
+                            className="p-1.5 text-tertiary hover:text-primary transition-all"
+                            title="Editar aporte"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(a.id)}
+                            className="p-1.5 text-tertiary hover:text-red-500 transition-all"
+                            title="Remover aporte"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

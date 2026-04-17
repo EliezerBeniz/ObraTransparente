@@ -33,6 +33,7 @@ export interface Expense {
   quantity: number | null;
   created_by: string | null;
   created_at: string;
+  paid_from_fund?: boolean;
 }
 
 export interface Attachment {

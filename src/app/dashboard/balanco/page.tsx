@@ -29,7 +29,8 @@ export default function BalancoPage() {
       ]);
 
       if (expensesRes.ok && sociosRes.ok) {
-        const expenses: ExpenseWithAttachments[] = await expensesRes.json();
+        const rawExpenses: ExpenseWithAttachments[] = await expensesRes.json();
+        const expenses = rawExpenses.filter(e => e.status === 'Pago');
         const rawSocios: Profile[] = await sociosRes.json();
         const advances: Advance[] = advancesRes.ok ? await advancesRes.json() : [];
         const socios = rawSocios.filter((s: any) => {
