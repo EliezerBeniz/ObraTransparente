@@ -47,12 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .maybeSingle(); // Better than limit(1) for single result
         
         if (error) {
-          console.error('Role fetch error details:', {
-            message: error.message,
-            code: error.code,
-            details: error.details,
-            hint: error.hint
-          });
+          console.error('Role fetch error details:', error);
           return 'viewer';
         }
 
