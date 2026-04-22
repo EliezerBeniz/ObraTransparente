@@ -17,6 +17,7 @@ export interface ExpenseParticipant {
   user_id: string;
   amount_paid: number;
   created_at: string;
+  receipt_url?: string;
   profiles?: {
     full_name: string;
   };

@@ -46,15 +46,19 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { title, description, amount, date, category, status, quantity, file_url, label, participants, paid_from_fund, shopping_item_id } = body
 
-    // URL Validation
-    if (file_url && !/^https?:\/\/(drive|docs)\.google\.com\//.test(file_url)) {
-      return NextResponse.json({ error: 'Invalid attachment URL. Must be a Google Drive link.' }, { status: 400 })
-    }
-
-    if (!paid_from_fund) {
+    if (paid_from_fund) {
+      if (!file_url || !/^https?:\/\/(drive|docs)\.google\.com\//.test(file_url)) {
+        return NextResponse.json({ error: 'O link do comprovante (Google Drive) é obrigatório para pagamentos via Caixa da Obra.' }, { status: 400 })
+      }
+    } else {
       // Participants Validation (only when not paid from fund)
       if (!participants || !Array.isArray(participants) || participants.length === 0) {
         return NextResponse.json({ error: 'Ao menos um pagador (sócio) deve ser informado.' }, { status: 400 })
+      }
+
+      const invalidReceipts = participants.some((p: any) => !p.receipt_url || !/^https?:\/\/(drive|docs)\.google\.com\//.test(p.receipt_url))
+      if (invalidReceipts) {
+        return NextResponse.json({ error: 'É obrigatório informar um link de comprovante válido (Google Drive) para CADA sócio.' }, { status: 400 })
       }
 
       const participantsSum = participants.reduce((acc: number, p: any) => acc + Number(p.amount_paid), 0)

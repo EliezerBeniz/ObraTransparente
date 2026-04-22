@@ -31,13 +31,15 @@ export function ExpenseForm({
     supplier: '',
     desc: '',
     amount: '',
+    unitPrice: '',
     cat: 'Material',
     status: 'Pendente',
-    quantity: '1'
+    quantity: '1',
+    file_url: ''
   });
 
   const [socios, setSocios] = useState<Profile[]>([]);
-  const [participants, setParticipants] = useState<{ user_id: string; amount_paid: number }[]>([]);
+  const [participants, setParticipants] = useState<{ user_id: string; amount_paid: number; receipt_url?: string }[]>([]);
   const [paidFromFund, setPaidFromFund] = useState(false);
 
   useEffect(() => {
@@ -60,15 +62,18 @@ export function ExpenseForm({
         supplier: initialData.title,
         desc: initialData.description || '',
         amount: initialData.amount.toString(),
+        unitPrice: initialData.quantity ? (initialData.amount / initialData.quantity).toFixed(2) : initialData.amount.toString(),
         cat: initialData.category,
         status: initialData.status,
         quantity: initialData.quantity?.toString() || '1',
+        file_url: initialData.attachments?.[0]?.file_url || '',
       });
 
       if (initialData.expense_participants) {
         setParticipants(initialData.expense_participants.map(p => ({
           user_id: p.user_id,
           amount_paid: Number(p.amount_paid),
+          receipt_url: p.receipt_url || ''
         })));
       }
 
@@ -84,14 +89,54 @@ export function ExpenseForm({
         desc: prefillData.desc || '',
         cat: prefillData.cat || 'Material',
         amount: prefillData.amount || '',
+        unitPrice: prefillData.amount || '',
         date: prefillData.date || prev.date,
       }));
     }
   }, [initialData, prefillData]);
 
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setForm(prev => {
+      const q = parseFloat(val) || 0;
+      const u = parseFloat(prev.unitPrice) || 0;
+      return { 
+        ...prev, 
+        quantity: val, 
+        amount: (q * u) > 0 ? (q * u).toFixed(2) : prev.amount 
+      };
+    });
+  };
+
+  const handleUnitPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setForm(prev => {
+      const u = parseFloat(val) || 0;
+      const q = parseFloat(prev.quantity) || 0;
+      return { 
+        ...prev, 
+        unitPrice: val, 
+        amount: (q * u) > 0 ? (q * u).toFixed(2) : prev.amount 
+      };
+    });
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setForm(prev => {
+      const a = parseFloat(val) || 0;
+      const q = parseFloat(prev.quantity) || 1;
+      return { 
+        ...prev, 
+        amount: val, 
+        unitPrice: q > 0 ? (a / q).toFixed(2) : prev.unitPrice 
+      };
+    });
+  };
+
   const addParticipant = () => {
     if (socios.length > 0) {
-      setParticipants([...participants, { user_id: socios[0].id, amount_paid: 0 }]);
+      setParticipants([...participants, { user_id: socios[0].id, amount_paid: 0, receipt_url: '' }]);
     }
   };
 
@@ -119,10 +164,16 @@ export function ExpenseForm({
     setParticipants(newParticipants);
   };
 
+  const isValidUrl = (url: string) => {
+    return /^https?:\/\/(drive|docs)\.google\.com\//.test(url || '');
+  };
+
   const totalPaid = participants.reduce((acc, p) => acc + (p.amount_paid || 0), 0);
   const isValid = paidFromFund
-    ? (parseFloat(form.amount) > 0)
-    : (Math.abs(totalPaid - (parseFloat(form.amount) || 0)) < 0.01 && participants.length > 0);
+    ? (parseFloat(form.amount) > 0 && isValidUrl(form.file_url))
+    : (Math.abs(totalPaid - (parseFloat(form.amount) || 0)) < 0.01 && 
+       participants.length > 0 && 
+       participants.every(p => isValidUrl(p.receipt_url || '')));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,9 +188,11 @@ export function ExpenseForm({
       label: 'Comprovante',
       shopping_item_id: prefillData?.shopping_item_id || null,
       paid_from_fund: paidFromFund,
+      file_url: paidFromFund ? form.file_url : undefined,
       participants: paidFromFund ? [] : participants.map(p => ({
         user_id: p.user_id,
         amount_paid: p.amount_paid,
+        receipt_url: p.receipt_url
       }))
     };
     await onSubmit(payload);
@@ -193,16 +246,29 @@ export function ExpenseForm({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:col-span-2">
             <div className="space-y-2">
               <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold block">Qtd</label>
               <input
                 type="number"
                 value={form.quantity}
-                onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+                onChange={handleQuantityChange}
                 placeholder="1"
                 min="0.01"
                 step="any"
+                className="w-full bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-tertiary/40"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold block">Preço Un. (R$)</label>
+              <input
+                type="number"
+                value={form.unitPrice}
+                onChange={handleUnitPriceChange}
+                placeholder="0,00"
+                step="0.01"
+                min="0"
                 className="w-full bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-tertiary/40"
                 required
               />
@@ -212,7 +278,7 @@ export function ExpenseForm({
               <input
                 type="number"
                 value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                onChange={handleAmountChange}
                 placeholder="0,00"
                 step="0.01"
                 min="0"
@@ -260,7 +326,7 @@ export function ExpenseForm({
                   setPaidFromFund(newState);
                   // Auto-add first socio if switching to participants and list is empty
                   if (!newState && participants.length === 0 && socios.length > 0) {
-                    setParticipants([{ user_id: socios[0].id, amount_paid: 0 }]);
+                    setParticipants([{ user_id: socios[0].id, amount_paid: 0, receipt_url: '' }]);
                   }
                 }}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-architectural text-sm font-heading transition-all border ${
@@ -282,6 +348,23 @@ export function ExpenseForm({
                 </p>
               )}
             </div>
+
+            {paidFromFund && (
+              <div className="w-full mt-2 animate-[slideIn_0.2s_ease-out]">
+                <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold block mb-2">Comprovante (Link Drive)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary"><Link size={14} /></span>
+                  <input
+                    type="url"
+                    value={form.file_url}
+                    onChange={(e) => setForm({ ...form, file_url: e.target.value })}
+                    placeholder="https://drive.google.com/..."
+                    className="w-full bg-surface-low border border-ghost-border rounded-architectural pl-10 pr-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-tertiary/40"
+                    required
+                  />
+                </div>
+              </div>
+            )}
 
             {!paidFromFund && (
             <div className="space-y-4">
@@ -341,6 +424,18 @@ export function ExpenseForm({
                       >
                         <Trash2 size={16} />
                       </button>
+                    </div>
+
+                    <div className="w-full relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary"><Link size={14} /></span>
+                      <input
+                        type="url"
+                        value={p.receipt_url || ''}
+                        onChange={(e) => updateParticipant(idx, 'receipt_url', e.target.value)}
+                        placeholder="Link do comprovante (Google Drive)"
+                        className="w-full bg-surface-lowest border border-ghost-border rounded-architectural pl-10 pr-4 py-2.5 text-sm font-body text-foreground focus:ring-2 focus:ring-secondary/20 outline-none transition-all placeholder:text-tertiary/40"
+                        required
+                      />
                     </div>
                   </div>
                 ))}
