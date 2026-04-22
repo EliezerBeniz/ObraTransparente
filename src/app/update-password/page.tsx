@@ -13,7 +13,7 @@ export default function UpdatePasswordPage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   useEffect(() => {
     // When the user lands on this page via an email link, Supabase will 

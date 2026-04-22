@@ -10,10 +10,11 @@ export default function ProjectToolsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const [supabase] = useState(() => createClient());
+
   useEffect(() => {
     const fetchTools = async () => {
       try {
-        const supabase = createClient();
         const { data, error } = await supabase
           .from('tool_lendings')
           .select(`
