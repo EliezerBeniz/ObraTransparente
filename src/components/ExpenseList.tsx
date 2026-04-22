@@ -76,7 +76,7 @@ export function ExpenseList({
               <tr className="bg-surface-low/50 border-b border-ghost-border">
                 <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-tertiary font-bold">Data</th>
                 <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-tertiary font-bold">Categoria</th>
-                <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-tertiary font-bold">Fornecedor / Sócio</th>
+                <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-tertiary font-bold">Fornecedor / Descrição</th>
                 <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-tertiary font-bold">Status</th>
                 <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-tertiary font-bold text-right">Valor Total</th>
                 <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-tertiary font-bold text-center">Anexo</th>
@@ -104,30 +104,37 @@ export function ExpenseList({
                           <span className="ml-2 text-[10px] text-tertiary">({expense.quantity} un)</span>
                         )}
                       </span>
-                      <div className="flex flex-wrap gap-1.5 mt-1.5">
-                        {expense.expense_participants && expense.expense_participants.length > 0 ? (
-                          expense.expense_participants.map((p, pIdx) => (
-                            <div key={p.id || pIdx} className="flex items-center gap-1 bg-surface-low border border-ghost-border px-1.5 py-0.5 rounded">
-                              <Users size={10} className="text-tertiary opacity-40 shrink-0" />
-                              <span className="text-[9px] font-bold text-tertiary uppercase tracking-tight" title={formatCurrency(p.amount_paid)}>
-                                {p.profiles?.full_name?.split(' ')[0] || 'Sócio'}
-                              </span>
-                              {(p as any).receipt_url && (
-                                <a 
-                                  href={(p as any).receipt_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:text-primary-container transition-colors"
-                                  title="Ver Comprovante"
-                                >
-                                  <LinkIcon size={10} />
-                                </a>
-                              )}
-                            </div>
-                          ))
-                        ) : (
-                          <span className="text-xs text-tertiary font-body italic opacity-60">Lançamento pré-migração</span>
+                      <div className="flex flex-col gap-1 mt-1">
+                        {expense.description && (
+                          <p className="text-[11px] text-tertiary font-body leading-relaxed max-w-md">
+                            {expense.description}
+                          </p>
                         )}
+                        <div className="flex flex-wrap gap-1.5 mt-0.5">
+                          {expense.expense_participants && expense.expense_participants.length > 0 ? (
+                            expense.expense_participants.map((p, pIdx) => (
+                              <div key={p.id || pIdx} className="flex items-center gap-1 bg-surface-low border border-ghost-border px-1.5 py-0.5 rounded">
+                                <Users size={10} className="text-tertiary opacity-40 shrink-0" />
+                                <span className="text-[9px] font-bold text-tertiary uppercase tracking-tight" title={formatCurrency(p.amount_paid)}>
+                                  {p.profiles?.full_name?.split(' ')[0] || 'Sócio'}
+                                </span>
+                                {(p as any).receipt_url && (
+                                  <a 
+                                    href={(p as any).receipt_url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:text-primary-container transition-colors ml-0.5"
+                                    title="Ver Comprovante"
+                                  >
+                                    <LinkIcon size={10} />
+                                  </a>
+                                )}
+                              </div>
+                            ))
+                          ) : !expense.description && (
+                            <span className="text-[10px] text-tertiary font-body italic opacity-40">Lançamento anterior</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </td>

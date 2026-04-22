@@ -160,7 +160,7 @@ export default function BalancoPage() {
                       </button>
 
                       {/* Dropdown Content */}
-                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedSocios[socio.id] ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                      <div className={`transition-all duration-300 ease-in-out scrollbar-thin scrollbar-thumb-ghost-border scrollbar-track-transparent ${expandedSocios[socio.id] ? 'max-h-[450px] opacity-100 mt-4 overflow-y-auto pr-1' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                         <div className="bg-surface-low/50 rounded-lg border border-ghost-border p-3 space-y-3">
                           <h5 className="text-[9px] uppercase tracking-widest font-bold text-tertiary flex items-center gap-2">
                             <Receipt size={12} />
@@ -173,7 +173,7 @@ export default function BalancoPage() {
                                   <CalendarDays size={12} />
                                   <span>{new Date(adv.date + 'T12:00:00').toLocaleDateString('pt-BR')}</span>
                                 </div>
-                                <span className="flex-1 px-3 text-foreground italic truncate max-w-[150px]">
+                                <span className="flex-1 px-3 text-foreground italic whitespace-normal leading-tight py-1">
                                   {adv.description || 'Aporte ao Caixa'}
                                 </span>
                                 <span className="font-bold text-secondary">
