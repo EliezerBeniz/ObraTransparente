@@ -33,6 +33,7 @@ export interface ProjectBalance {
   instructions: SettlementInstruction[];
   totalFromFund: number;    // Expenses paid by the common fund
   totalDeposited: number;   // Total advances deposited
+  caixaBalance: number;     // Physical cash remaining in the fund (Deposited - FromFund)
 }
 
 /**
@@ -145,6 +146,42 @@ export function calculateProjectBalance(
     if (creditor.net <= 0.01) cIdx++;
   }
 
+  // 5. CAIXA SETTLEMENT: Any remaining debt/credit is resolved with the Caixa.
+  // Because total nets sum to exactly the Caixa Balance, remaining positive nets 
+  // mean the Caixa owes those partners. Remaining negative nets mean those partners owe the Caixa.
+
+  // If there are still creditors (Caixa owes to partners)
+  while (cIdx < creditors.length) {
+    const creditor = creditors[cIdx];
+    if (creditor.net > 0.01) {
+      instructions.push({
+        fromId: 'CAIXA_ID',
+        fromName: 'Caixa da Obra',
+        toId: creditor.id,
+        toName: creditor.name,
+        amount: Number(creditor.net.toFixed(2))
+      });
+    }
+    cIdx++;
+  }
+
+  // If there are still debtors (Partners owe to Caixa)
+  while (dIdx < debtors.length) {
+    const debtor = debtors[dIdx];
+    if (debtor.net > 0.01) {
+      instructions.push({
+        fromId: debtor.id,
+        fromName: debtor.name,
+        toId: 'CAIXA_ID',
+        toName: 'Caixa da Obra',
+        amount: Number(debtor.net.toFixed(2))
+      });
+    }
+    dIdx++;
+  }
+
+  const caixaBalance = totalDeposited - totalFromFund;
+
   return {
     totalProject: Number(totalProject.toFixed(2)),
     avgPerSocio: Number(avgPerSocio.toFixed(2)),
@@ -152,5 +189,6 @@ export function calculateProjectBalance(
     instructions,
     totalFromFund: Number(totalFromFund.toFixed(2)),
     totalDeposited: Number(totalDeposited.toFixed(2)),
+    caixaBalance: Number(caixaBalance.toFixed(2)),
   };
 }

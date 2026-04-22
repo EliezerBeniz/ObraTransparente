@@ -85,7 +85,7 @@ export default function BalancoPage() {
   return (
     <div className="space-y-10 animate-[fadeIn_0.4s_ease-out]">
       {/* Header Stat Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <div className="bg-surface-lowest p-6 md:p-8 rounded-architectural border border-ghost-border shadow-sm flex items-center justify-between group">
           <div>
             <p className="text-[10px] uppercase tracking-widest text-tertiary mb-1 font-bold">Investimento Total na Obra</p>
@@ -102,6 +102,21 @@ export default function BalancoPage() {
           </div>
           <div className="p-3 md:p-4 bg-secondary/10 text-secondary rounded-architectural group-hover:bg-secondary group-hover:text-white transition-all shrink-0">
             <PiggyBank size={24} />
+          </div>
+        </div>
+        <div className="bg-surface-lowest p-6 md:p-8 rounded-architectural border border-primary/20 shadow-sm flex items-center justify-between group relative overflow-hidden">
+          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="relative z-10 w-full">
+            <p className="text-[10px] uppercase tracking-widest text-primary mb-1 font-bold">Saldo do Caixa da Obra</p>
+            <h2 className="text-2xl md:text-3xl font-heading text-foreground tabular-nums">{formatCurrency(balance.caixaBalance)}</h2>
+            <div className="flex items-center gap-1.5 mt-2 text-[9px] font-bold text-tertiary uppercase tracking-normal">
+              <span className="text-secondary px-1.5 py-0.5 bg-secondary/10 rounded" title="Total aportado">+{formatCurrency(balance.totalDeposited)}</span>
+              <span className="opacity-50">/</span>
+              <span className="text-primary px-1.5 py-0.5 bg-primary/10 rounded" title="Gasto pelo caixa">-{formatCurrency(balance.totalFromFund)}</span>
+            </div>
+          </div>
+          <div className="relative z-10 p-3 md:p-4 bg-primary text-white rounded-architectural group-hover:scale-110 transition-transform shrink-0 shadow-lg">
+            <Receipt size={24} />
           </div>
         </div>
       </section>
@@ -203,18 +218,24 @@ export default function BalancoPage() {
             {balance.instructions.length > 0 ? (
               <div className="space-y-4">
                 {balance.instructions.map((ins, i) => (
-                  <div key={i} className="bg-surface-lowest p-5 rounded-architectural border border-ghost-border flex items-center justify-between shadow-sm animate-[slideIn_0.3s_ease-out]">
+                  <div key={i} className={`bg-surface-lowest p-5 rounded-architectural border ${ins.fromId === 'CAIXA_ID' || ins.toId === 'CAIXA_ID' ? 'border-primary/30 shadow-md' : 'border-ghost-border shadow-sm'} flex items-center justify-between animate-[slideIn_0.3s_ease-out]`}>
                     <div className="space-y-1">
                       <p className="text-[9px] uppercase tracking-widest text-tertiary font-bold">Quem paga</p>
-                      <p className="text-sm font-heading text-primary">{ins.fromName}</p>
+                      <p className={`text-sm font-heading flex flex-col md:flex-row md:items-center gap-1.5 ${ins.fromId === 'CAIXA_ID' ? 'text-primary uppercase tracking-wider' : 'text-primary'}`}>
+                        {ins.fromId === 'CAIXA_ID' ? <Receipt size={14} className="opacity-80" /> : null}
+                        {ins.fromName}
+                      </p>
                     </div>
-                    <div className="flex flex-col items-center gap-1 opacity-20">
+                    <div className="flex flex-col items-center gap-1 opacity-30">
                       <ArrowRightLeft size={16} />
                       <p className="text-[8px] font-bold uppercase">{formatCurrency(ins.amount)}</p>
                     </div>
                     <div className="space-y-1 text-right">
                       <p className="text-[9px] uppercase tracking-widest text-tertiary font-bold">Recebe de</p>
-                      <p className="text-sm font-heading text-secondary">{ins.toName}</p>
+                      <p className={`text-sm font-heading flex flex-col md:flex-row md:items-center justify-end gap-1.5 ${ins.toId === 'CAIXA_ID' ? 'text-primary uppercase tracking-wider' : 'text-secondary'}`}>
+                        {ins.toId === 'CAIXA_ID' ? <Receipt size={14} className="opacity-80" /> : null}
+                        {ins.toName}
+                      </p>
                     </div>
                   </div>
                 ))}
