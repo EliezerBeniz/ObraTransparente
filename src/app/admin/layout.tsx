@@ -18,8 +18,14 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && (!user || role !== 'admin')) {
-      router.push('/');
+    // Only redirect if loading is definitively finished, and we are sure there is no user OR the role is definitively not admin
+    // Added a small delay check: if we have a user but role is null, we stay in 'loading' state instead of jumping to home
+    if (!loading) {
+      if (!user) {
+        router.push('/');
+      } else if (role !== null && role !== 'admin') {
+        router.push('/');
+      }
     }
   }, [user, role, loading, router]);
 

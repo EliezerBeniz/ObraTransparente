@@ -39,7 +39,7 @@ export function AdvanceForm({ socios, onSubmit, onCancel, submitting, initialDat
   };
 
   return (
-    <div className="bg-surface-lowest border border-ghost-border rounded-architectural p-6 md:p-8 animate-[fadeIn_0.2s_ease-out]">
+    <div className="p-6 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-heading text-foreground">
           {initialData ? 'Editar Aporte' : 'Novo Aporte ao Caixa'}

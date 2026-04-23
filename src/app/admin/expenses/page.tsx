@@ -6,6 +6,7 @@ import { ExpenseWithAttachments, Profile } from '@/lib/types';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ExpenseList } from '@/components/ExpenseList';
 import { ExpenseForm } from '@/components/ExpenseForm';
+import { ExpenseModal } from '@/components/admin/ExpenseModal';
 import { ReportPrintView } from '@/components/ReportPrintView';
 import { exportToCSV } from '@/lib/utils';
 import { Advance } from '@/lib/finance';
@@ -231,11 +232,12 @@ export default function AdminExpensesPage() {
       </div>
 
       {showForm && (
-        <ExpenseForm
+        <ExpenseModal
+          isOpen={showForm}
           initialData={editingExpense}
           prefillData={prefillData}
           onSubmit={handleSubmit}
-          onCancel={handleCancel}
+          onClose={handleCancel}
           submitting={submitting}
         />
       )}

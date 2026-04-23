@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import PageContainer from '@/components/PageContainer';
-import { AdvanceForm } from '@/components/admin/AdvanceForm';
+import { AdvanceModal } from '@/components/admin/AdvanceModal';
 import { Profile } from '@/lib/types';
 import {
   Wallet, TrendingUp, TrendingDown, AlertTriangle,
@@ -197,22 +197,21 @@ export default function AdminAdvancesPage() {
           </div>
         </div>
 
-        {/* Form */}
-        {showForm && socios.length > 0 && (
-          <AdvanceForm
-            socios={socios}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-            submitting={submitting}
-            initialData={editingAdvance ? {
-              user_id: editingAdvance.user_id,
-              amount: editingAdvance.amount,
-              date: editingAdvance.date,
-              description: editingAdvance.description,
-              receipt_url: editingAdvance.receipt_url
-            } : undefined}
-          />
-        )}
+        {/* Modal */}
+        <AdvanceModal
+          isOpen={showForm}
+          onClose={handleCancel}
+          socios={socios}
+          onSubmit={handleSubmit}
+          submitting={submitting}
+          initialData={editingAdvance ? {
+            user_id: editingAdvance.user_id,
+            amount: editingAdvance.amount,
+            date: editingAdvance.date,
+            description: editingAdvance.description,
+            receipt_url: editingAdvance.receipt_url
+          } : undefined}
+        />
 
         {loading ? (
           <div className="text-center py-12 text-tertiary animate-pulse font-body">Carregando...</div>

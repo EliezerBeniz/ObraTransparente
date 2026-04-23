@@ -35,20 +35,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return prevRole;
         });
       }
-    }, 4000);
+    }, 10000);
 
-    const checkRole = async (userId: string) => {
-      console.debug('Checking role for user:', userId);
+    const checkRole = async (userId: string, retryCount = 0): Promise<'admin' | 'viewer' | 'convidado'> => {
+      console.debug('Checking role for user:', userId, retryCount > 0 ? `(retry ${retryCount})` : '');
       try {
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', userId)
-          .maybeSingle(); // Better than limit(1) for single result
+          .maybeSingle();
         
         if (error) {
-          console.error('Role fetch error details:', error);
-          return 'viewer';
+          // If it's a lock error, retry up to 3 times
+          if ((error.message?.includes('Lock') || error.details?.includes('Lock')) && retryCount < 3) {
+            console.warn(`Auth lock conflict detected for role fetch. Retrying in ${500 * (retryCount + 1)}ms...`);
+            await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1)));
+            return checkRole(userId, retryCount + 1);
+          }
+          
+          console.error('Role fetch failed permanently:', error);
+          // If we already have a role (e.g. from another tab), don't overwrite it with viewer on error
+          return role || 'viewer';
         }
 
         if (!data) {
@@ -64,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return 'viewer';
       } catch (err) {
         console.error('CheckRole critical failure:', err);
-        return 'viewer';
+        return role || 'viewer';
       }
     };
 

@@ -169,11 +169,13 @@ export function ExpenseForm({
   };
 
   const totalPaid = participants.reduce((acc, p) => acc + (p.amount_paid || 0), 0);
+  const isPaid = form.status === 'Pago';
+  
   const isValid = paidFromFund
-    ? (parseFloat(form.amount) > 0 && isValidUrl(form.file_url))
+    ? (parseFloat(form.amount) > 0 && (!isPaid || isValidUrl(form.file_url)))
     : (Math.abs(totalPaid - (parseFloat(form.amount) || 0)) < 0.01 && 
        participants.length > 0 && 
-       participants.every(p => isValidUrl(p.receipt_url || '')));
+       (!isPaid || participants.every(p => isValidUrl(p.receipt_url || ''))));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,8 +201,8 @@ export function ExpenseForm({
   };
 
   return (
-    <div className="bg-surface-lowest rounded-architectural p-8 border border-ghost-border shadow-sm animate-[fadeIn_0.2s_ease-out]">
-      <div className="flex items-center justify-between mb-6">
+    <div className="w-full bg-surface-lowest p-0 animate-[fadeIn_0.2s_ease-out]">
+      <div className="flex items-center justify-between mb-6 px-8 pt-8">
         <h3 className="text-lg font-heading text-foreground">
           {initialData ? 'Editar Despesa' : 'Nova Despesa'}
         </h3>
@@ -209,7 +211,7 @@ export function ExpenseForm({
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 px-8 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold block">Data</label>
@@ -236,13 +238,13 @@ export function ExpenseForm({
 
           <div className="md:col-span-2 space-y-2">
             <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold block">Descrição</label>
-            <input
-              type="text"
+            <textarea
               value={form.desc}
               onChange={(e) => setForm({ ...form, desc: e.target.value })}
               placeholder="Descrição detalhada da despesa"
-              className="w-full bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-tertiary/40"
+              className="w-full bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-tertiary/40 min-h-[100px] resize-y"
               required
+              rows={3}
             />
           </div>
 
@@ -351,7 +353,9 @@ export function ExpenseForm({
 
             {paidFromFund && (
               <div className="w-full mt-2 animate-[slideIn_0.2s_ease-out]">
-                <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold block mb-2">Comprovante (Link Drive)</label>
+                <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold block mb-2">
+                  Comprovante (Link Drive) {isPaid && <span className="text-red-400 opacity-70">(Obrigatório)</span>}
+                </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary"><Link size={14} /></span>
                   <input
@@ -360,7 +364,7 @@ export function ExpenseForm({
                     onChange={(e) => setForm({ ...form, file_url: e.target.value })}
                     placeholder="https://drive.google.com/..."
                     className="w-full bg-surface-low border border-ghost-border rounded-architectural pl-10 pr-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-tertiary/40"
-                    required
+                    required={isPaid}
                   />
                 </div>
               </div>
@@ -432,9 +436,9 @@ export function ExpenseForm({
                         type="url"
                         value={p.receipt_url || ''}
                         onChange={(e) => updateParticipant(idx, 'receipt_url', e.target.value)}
-                        placeholder="Link do comprovante (Google Drive)"
+                        placeholder={isPaid ? "Link do comprovante (Obrigatório)" : "Link do comprovante (Opcional p/ Pendente)"}
                         className="w-full bg-surface-lowest border border-ghost-border rounded-architectural pl-10 pr-4 py-2.5 text-sm font-body text-foreground focus:ring-2 focus:ring-secondary/20 outline-none transition-all placeholder:text-tertiary/40"
-                        required
+                        required={isPaid}
                       />
                     </div>
                   </div>
@@ -451,7 +455,17 @@ export function ExpenseForm({
                 )}
 
                 <div className="flex justify-between items-center p-4 bg-surface-low/30 rounded-architectural border border-ghost-border">
-                  <p className="text-xs font-body text-tertiary">Total informado pelos sócios:</p>
+                  <div className="space-y-1">
+                    <p className="text-xs font-body text-tertiary">Total informado pelos sócios:</p>
+                    {Math.abs(totalPaid - (parseFloat(form.amount) || 0)) > 0.01 && (
+                      <p className={`text-[10px] font-bold uppercase tracking-wider ${totalPaid < (parseFloat(form.amount) || 0) ? 'text-amber-500' : 'text-red-500'}`}>
+                        {totalPaid < (parseFloat(form.amount) || 0) 
+                          ? `Faltam: R$ ${(parseFloat(form.amount) - totalPaid).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                          : `Excedente: R$ ${(totalPaid - parseFloat(form.amount)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                        }
+                      </p>
+                    )}
+                  </div>
                   <div className="text-right">
                     <p className={`text-sm font-heading ${isValid ? 'text-secondary' : 'text-red-500'}`}>
                       R$ {totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
