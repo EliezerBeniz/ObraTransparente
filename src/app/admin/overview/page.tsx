@@ -25,6 +25,7 @@ interface Settings    { total_budget: number; project_name: string; completion_p
 
 const CATEGORY_COLORS: Record<string, string> = {
   'Material':    '#3B82F6',
+  'Equipamento': '#F43F5E',
   'Mão de Obra': '#10B981',
   'Projetos':    '#8B5CF6',
   'Legal':       '#F59E0B',

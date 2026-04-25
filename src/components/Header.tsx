@@ -195,7 +195,7 @@ const Header = () => {
                         <div className="p-1.5">
                           {role === 'admin' && (
                             <Link 
-                              href="/admin/expenses" 
+                              href="/admin/overview" 
                               className="flex items-center gap-3 px-3 py-2.5 text-xs text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-colors"
                             >
                               <Settings size={14} className="text-primary" />
@@ -231,10 +231,16 @@ const Header = () => {
           {isMounted && !user && !isLoginPage && (
             <div className="flex items-center gap-4">
               <Link 
+                href="/project/tools" 
+                className="text-tertiary hover:text-primary transition-colors text-sm font-body hidden md:block"
+              >
+                Ferramentas
+              </Link>
+              <Link 
                 href="/project/documents" 
                 className="text-tertiary hover:text-primary transition-colors text-sm font-body hidden md:block"
               >
-                Documentos do Projeto
+                Documentos
               </Link>
               <Link href="/" className="bg-primary text-white px-5 py-2.5 rounded-architectural text-sm font-body hover:bg-primary-container transition-all">
                 Login
@@ -348,7 +354,7 @@ const Header = () => {
               <div className="mt-4 pt-4 border-t border-ghost-border/50">
                 <p className="text-[10px] font-heading text-tertiary uppercase tracking-widest mb-3 px-4">Administração</p>
                 <Link 
-                  href="/admin/expenses" 
+                  href="/admin/overview" 
                   className={`flex items-center gap-4 p-4 rounded-architectural text-base font-heading font-medium transition-all active:scale-[0.98] ${pathname.startsWith('/admin') ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-foreground hover:bg-surface-low'}`}
                 >
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pathname.startsWith('/admin') ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>

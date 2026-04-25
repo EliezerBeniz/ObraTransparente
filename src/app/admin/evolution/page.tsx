@@ -13,6 +13,7 @@ interface Update {
   description?: string
   image_url: string
   created_at: string
+  project_update_media?: any[]
 }
 
 export default function AdminEvolutionPage() {

@@ -8,7 +8,8 @@ export async function GET() {
     .from('project_updates')
     .select(`
       *,
-      project_phases (title)
+      project_phases (title),
+      project_update_media (*)
     `)
     .order('date', { ascending: false })
 
@@ -37,11 +38,15 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { title, description, date, image_url, phase_id } = body
+    const { title, description, date, media, phase_id } = body
 
-    if (!title || !image_url) {
-      return NextResponse.json({ error: 'Título e URL da imagem são obrigatórios.' }, { status: 400 })
+    if (!title || !media || !Array.isArray(media) || media.length === 0) {
+      return NextResponse.json({ error: 'Título e ao menos uma mídia são obrigatórios.' }, { status: 400 })
     }
+
+    // Determine the image_url (cover) for denormalized access if needed
+    // or just keep using the first one marked as is_cover
+    const coverMedia = media.find(m => m.is_cover) || media[0]
 
     const { data: newUpdate, error } = await supabase
       .from('project_updates')
@@ -49,7 +54,7 @@ export async function POST(request: Request) {
         title,
         description,
         date: date || new Date().toISOString().split('T')[0],
-        image_url,
+        image_url: coverMedia.media_url, // Keep it for backwards compatibility
         phase_id: phase_id || null
       })
       .select()
@@ -57,7 +62,21 @@ export async function POST(request: Request) {
 
     if (error) throw error
 
-    return NextResponse.json(newUpdate)
+    // Insert all media
+    const mediaToInsert = media.map(m => ({
+      update_id: newUpdate.id,
+      media_url: m.media_url,
+      media_type: m.media_type || 'image',
+      is_cover: m.is_cover || false
+    }))
+
+    const { error: mediaError } = await supabase
+      .from('project_update_media')
+      .insert(mediaToInsert)
+
+    if (mediaError) throw mediaError
+
+    return NextResponse.json({ ...newUpdate, project_update_media: mediaToInsert })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

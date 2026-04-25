@@ -59,6 +59,27 @@ export default function AdminTimelinePage() {
     fetchPhases()
   }
 
+  const handleReorder = async (newPhases: Phase[]) => {
+    // Update local state immediately for smooth UI
+    setPhases(newPhases)
+    
+    try {
+      const res = await fetch('/api/phases', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phases: newPhases.map(p => ({ id: p.id, order_index: p.order_index }))
+        })
+      })
+      
+      if (!res.ok) throw new Error('Failed to save order')
+    } catch (err) {
+      console.error('Error saving new order:', err)
+      // Rollback on error
+      fetchPhases()
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -102,6 +123,7 @@ export default function AdminTimelinePage() {
               phases={phases} 
               onEdit={handleEdit} 
               onDelete={handleDelete} 
+              onReorder={handleReorder}
             />
           )}
         </div>

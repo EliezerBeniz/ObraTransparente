@@ -3,11 +3,11 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   TrendingUp, Clock, CheckCircle2, ChevronRight, ArrowRightLeft,
-  CalendarDays, Camera, Building2, Users
+  CalendarDays, Camera, Building2, Users, Wrench
 } from "lucide-react";
 import Link from 'next/link';
 import { ExpenseWithAttachments } from '@/lib/types';
-import { formatCurrency, formatDate, getDirectDriveImageUrl } from '@/lib/utils';
+import { formatCurrency, formatDate, getDirectDriveImageUrl, isLendingDelayed } from '@/lib/utils';
 import { ExpenseList } from '@/components/ExpenseList';
 import { useAuth } from '@/components/providers/AuthProvider';
 
@@ -16,6 +16,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 // ─────────────────────────────────────────────
 const CATEGORY_COLORS: Record<string, string> = {
   'Material':    '#3B82F6',
+  'Equipamento': '#F43F5E',
   'Mão de Obra': '#10B981',
   'Projetos':    '#8B5CF6',
   'Legal':       '#F59E0B',
@@ -110,6 +111,7 @@ export default function Dashboard() {
   const [phases, setPhases]                 = useState<any[]>([]);
   const [latestEvolution, setLatestEvolution] = useState<any>(null);
   const [myAdvances, setMyAdvances]         = useState<any[]>([]);
+  const [lendings, setLendings]             = useState<any[]>([]);
   const [loading, setLoading]               = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -119,15 +121,17 @@ export default function Dashboard() {
         fetch('/api/settings').then(r => r.ok ? r.json() : null),
         fetch('/api/phases').then(r => r.ok ? r.json() : []),
         fetch('/api/evolution').then(r => r.ok ? r.json() : []),
+        fetch('/api/tool-lendings').then(r => r.ok ? r.json() : []),
       ];
       // Sócios podem ver seus aportes pessoais
       if (user && role !== 'convidado') {
         fetches.push(fetch('/api/advances').then(r => r.ok ? r.json() : []));
       }
-      const [exp, set, ph, evo, adv] = await Promise.all(fetches);
+      const [exp, set, ph, evo, tools, adv] = await Promise.all(fetches);
       setExpenses(exp);
       setSettings(set);
       setPhases(ph);
+      setLendings(tools || []);
       if (evo?.length > 0) setLatestEvolution(evo[0]);
       if (adv) {
         // Filtra apenas aportes do usuário logado
@@ -188,6 +192,7 @@ export default function Dashboard() {
   // Mostramos apenas o total depositado pelo sócio
 
   const recentExpenses = expenses.slice(0, 4);
+  const pendingTools = lendings.filter(l => l.status !== 'Devolvido');
 
   if (loading) {
     return (
@@ -363,6 +368,49 @@ export default function Dashboard() {
               className="flex items-center gap-3 px-6 py-3 bg-secondary text-white rounded-architectural font-heading text-sm hover:bg-secondary/90 transition-all shadow-md active:scale-95 shrink-0">
               Ver Balanço <ChevronRight size={16} />
             </Link>
+          </div>
+        </section>
+      )}
+
+      {/* ─── Ferramentas em Uso ────────────────────────── */}
+      {pendingTools.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Wrench size={18} className="text-primary" />
+              <h3 className="text-base font-heading text-foreground">Equipamentos em Uso</h3>
+            </div>
+            <Link href="/project/tools" className="text-[10px] font-body text-primary hover:underline flex items-center gap-1 uppercase tracking-wider">
+              Ver Todas <ChevronRight size={12} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {pendingTools.slice(0, 4).map((tool) => (
+              <div key={tool.id} className="bg-surface-lowest p-4 rounded-architectural border border-ghost-border shadow-sm hover:shadow-md transition-all group">
+                <div className="flex justify-between items-start mb-3">
+                   <h4 className="text-xs font-heading font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{tool.tool_description}</h4>
+                   <div className="flex gap-1 flex-wrap justify-end">
+                    {isLendingDelayed(tool.expected_return_date, tool.status) && (
+                      <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase bg-red-600 text-white animate-pulse">
+                        Atrasado
+                      </span>
+                    )}
+                    <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase ${tool.status === 'Pendente' ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600'}`}>
+                      {tool.status}
+                    </span>
+                   </div>
+                </div>
+                <div className="flex items-center gap-2">
+                   <div className="w-6 h-6 rounded-full bg-surface-low flex items-center justify-center text-tertiary">
+                      <Users size={10} />
+                   </div>
+                   <p className="text-[10px] text-tertiary truncate">{tool.worker?.name || tool.borrower_name || 'Desconhecido'}</p>
+                </div>
+                <p className="text-[9px] text-tertiary mt-3 pt-3 border-t border-ghost-border/50">
+                  Emprestado em {formatDate(tool.lend_date)}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
       )}

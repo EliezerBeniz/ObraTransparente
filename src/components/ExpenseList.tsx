@@ -92,9 +92,16 @@ export function ExpenseList({
                     </div>
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
-                    <span className="text-[10px] px-2 py-1 bg-surface-low text-tertiary rounded uppercase font-bold tracking-tighter">
-                      {expense.category}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] px-2 py-1 bg-surface-low text-tertiary rounded uppercase font-bold tracking-tighter w-fit">
+                        {expense.category}
+                      </span>
+                      {expense.project_phases?.title && (
+                        <span className="text-[9px] px-2 py-0.5 bg-primary/5 text-primary border border-primary/10 rounded uppercase font-medium tracking-tight w-fit">
+                          {expense.project_phases.title}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex flex-col">

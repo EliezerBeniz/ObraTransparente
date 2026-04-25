@@ -86,3 +86,45 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
+
+export async function PATCH(request: Request) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { data: roleData } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', user.id)
+    .single()
+
+  if (roleData?.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  try {
+    const { phases } = await request.json() // Array of { id, order_index }
+    
+    if (!Array.isArray(phases)) {
+      throw new Error('Invalid input: phases must be an array')
+    }
+
+    // Bulk update order_index
+    // We use a loop here because Supabase upsert requires full objects or 
+    // we'd need a custom RPC for efficient bulk field-specific updates.
+    // For timeline phases, the number of items is small enough.
+    const updates = phases.map(p => 
+      supabase
+        .from('project_phases')
+        .update({ order_index: p.order_index })
+        .eq('id', p.id)
+    )
+
+    await Promise.all(updates)
+
+    return NextResponse.json({ success: true })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}

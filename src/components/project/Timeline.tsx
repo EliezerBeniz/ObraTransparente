@@ -54,7 +54,7 @@ export default function Timeline({ phases }: TimelineProps) {
                 <div className="p-3 md:p-4 rounded-architectural border border-ghost-border bg-white shadow-soft transition-all hover:border-primary/30 group">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-heading uppercase tracking-widest text-tertiary">
-                      {format(new Date(phase.phase_date), "MMMM yyyy", { locale: ptBR })}
+                      {format(new Date(phase.phase_date.includes('T') ? phase.phase_date : phase.phase_date + 'T12:00:00'), "MMMM yyyy", { locale: ptBR })}
                     </span>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-heading uppercase tracking-tighter ${
                       isCompleted ? 'bg-primary/10 text-primary' : 

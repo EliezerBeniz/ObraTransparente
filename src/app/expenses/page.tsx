@@ -10,7 +10,7 @@ import { InvestmentChart } from '@/components/InvestmentChart';
 import { Advance } from '@/lib/finance';
 
 export default function ExpensesPage() {
-  const categories = ["Todos", "Material", "Mão de Obra", "Projetos", "Legal", "Outros"];
+  const categories = ["Todos", "Material", "Equipamento", "Mão de Obra", "Projetos", "Legal", "Outros"];
   const [activeCategory, setActiveCategory] = useState("Todos");
   const [expenses, setExpenses] = useState<ExpenseWithAttachments[]>([]);
   const [socios, setSocios] = useState<Profile[]>([]);

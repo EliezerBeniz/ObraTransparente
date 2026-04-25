@@ -12,7 +12,8 @@ export async function GET() {
       expense_participants (
         *,
         profiles (full_name)
-      )
+      ),
+      project_phases (title)
     `)
     .order('date', { ascending: false })
 

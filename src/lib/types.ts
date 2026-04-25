@@ -38,6 +38,7 @@ export interface Expense {
   supplier_id?: string | null;
   supplier?: { name: string } | null;
   phase_id?: string | null;
+  project_phases?: { title: string } | null;
 }
 
 export interface Attachment {
@@ -126,4 +127,24 @@ export interface ShoppingItem {
   expense_id: string | null;
   created_by: string | null;
   created_at: string;
+}
+export interface EvolutionMedia {
+  id?: string;
+  update_id: string;
+  media_url: string;
+  media_type: 'image' | 'video';
+  is_cover: boolean;
+  created_at?: string;
+}
+
+export interface Evolution {
+  id: string;
+  date: string;
+  title: string;
+  description: string | null;
+  image_url: string;
+  created_at: string;
+  phase_id: string | null;
+  project_phases?: { title: string };
+  project_update_media?: EvolutionMedia[];
 }

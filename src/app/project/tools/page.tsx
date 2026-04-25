@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { ToolLending } from '@/lib/types';
+import { isLendingDelayed } from '@/lib/utils';
 import { Wrench, Search, Clock, CheckCircle2, User as UserIcon, Calendar, Camera } from 'lucide-react';
 
 export default function ProjectToolsPage() {
@@ -99,9 +100,16 @@ export default function ProjectToolsPage() {
                <div key={tool.id} className="group bg-surface-lowest rounded-architectural border border-ghost-border p-6 hover:shadow-xl hover:shadow-primary/5 transition-all">
                   <div className="flex justify-between items-start mb-6">
                     <h3 className="text-lg font-heading text-foreground group-hover:text-primary transition-colors">{tool.tool_description}</h3>
-                    <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full ${tool.status === 'Pendente' ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-600'}`}>
-                      {tool.status}
-                    </span>
+                    <div className="flex gap-2">
+                      {isLendingDelayed(tool.expected_return_date, tool.status) && (
+                        <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-red-600 text-white animate-pulse">
+                          Atrasado
+                        </span>
+                      )}
+                      <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full ${tool.status === 'Pendente' ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-600'}`}>
+                        {tool.status}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="space-y-4">

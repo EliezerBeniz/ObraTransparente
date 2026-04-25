@@ -23,7 +23,13 @@ export async function PUT(
 
   try {
     const body = await request.json()
-    const { title, description, date, image_url, phase_id } = body
+    const { title, description, date, media, phase_id } = body
+
+    if (!title || !media || !Array.isArray(media) || media.length === 0) {
+      return NextResponse.json({ error: 'Título e ao menos uma mídia são obrigatórios.' }, { status: 400 })
+    }
+
+    const coverMedia = media.find(m => m.is_cover) || media[0]
 
     const { data: updatedUpdate, error } = await supabase
       .from('project_updates')
@@ -31,7 +37,7 @@ export async function PUT(
         title,
         description,
         date,
-        image_url,
+        image_url: coverMedia.media_url,
         phase_id: phase_id || null
       })
       .eq('id', id)
@@ -40,7 +46,24 @@ export async function PUT(
 
     if (error) throw error
 
-    return NextResponse.json(updatedUpdate)
+    // Sync media: easiest way is to delete and re-insert or use a more complex sync logic
+    // For simplicity and since media count is low, we delete all and re-insert
+    await supabase.from('project_update_media').delete().eq('update_id', id)
+
+    const mediaToInsert = media.map(m => ({
+      update_id: id,
+      media_url: m.media_url,
+      media_type: m.media_type || 'image',
+      is_cover: m.is_cover || false
+    }))
+
+    const { error: mediaError } = await supabase
+      .from('project_update_media')
+      .insert(mediaToInsert)
+
+    if (mediaError) throw mediaError
+
+    return NextResponse.json({ ...updatedUpdate, project_update_media: mediaToInsert })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

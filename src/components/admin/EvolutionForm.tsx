@@ -2,14 +2,23 @@
 
 import React, { useState, useEffect } from 'react'
 import { Save, X, Calendar, Type, AlignLeft, Image as ImageIcon, ExternalLink, Activity } from 'lucide-react'
+import { getDirectDriveImageUrl } from '@/lib/utils'
+
+interface UpdateMedia {
+  id?: string
+  media_url: string
+  media_type: 'image' | 'video'
+  is_cover: boolean
+}
 
 interface Update {
   id?: string
   date: string
   title: string
   description?: string
-  image_url: string
+  image_url: string // Denormalized cover
   phase_id?: string
+  project_update_media?: UpdateMedia[]
 }
 
 interface EvolutionFormProps {
@@ -26,6 +35,8 @@ export default function EvolutionForm({ update, onSuccess, onCancel }: Evolution
     image_url: '',
     phase_id: ''
   })
+  const [mediaList, setMediaList] = useState<UpdateMedia[]>([])
+  const [newMediaUrl, setNewMediaUrl] = useState('')
   const [phases, setPhases] = useState<{id: string, title: string}[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -37,6 +48,20 @@ export default function EvolutionForm({ update, onSuccess, onCancel }: Evolution
         description: update.description || '',
         phase_id: update.phase_id || ''
       })
+      if (update.project_update_media) {
+        setMediaList(update.project_update_media)
+      } else if (update.image_url) {
+        setMediaList([{ media_url: update.image_url, media_type: 'image', is_cover: true }])
+      }
+    } else {
+      setFormData({
+        title: '',
+        description: '',
+        date: new Date().toISOString().split('T')[0],
+        image_url: '',
+        phase_id: ''
+      })
+      setMediaList([])
     }
   }, [update])
 
@@ -45,8 +70,6 @@ export default function EvolutionForm({ update, onSuccess, onCancel }: Evolution
       .then(res => res.json())
       .then(data => {
         setPhases(data)
-        // Se estiver criando novo registro (sem update), 
-        // pré-seleciona a etapa em andamento
         if (!update) {
           const inProgress = data.find((p: any) => p.status === 'in_progress')
           if (inProgress) {
@@ -57,8 +80,41 @@ export default function EvolutionForm({ update, onSuccess, onCancel }: Evolution
       .catch(err => console.error('Error fetching phases:', err))
   }, [update])
 
+  const addMedia = () => {
+    if (!newMediaUrl) return
+    const isFirst = mediaList.length === 0
+    setMediaList([...mediaList, { 
+      media_url: newMediaUrl, 
+      media_type: 'image', 
+      is_cover: isFirst 
+    }])
+    setNewMediaUrl('')
+  }
+
+  const removeMedia = (index: number) => {
+    const newMedia = mediaList.filter((_, i) => i !== index)
+    // If we removed the cover, make the first one the cover
+    if (mediaList[index].is_cover && newMedia.length > 0) {
+      newMedia[0].is_cover = true
+    }
+    setMediaList(newMedia)
+  }
+
+  const setCover = (index: number) => {
+    const newMedia = mediaList.map((m, i) => ({
+      ...m,
+      is_cover: i === index
+    }))
+    setMediaList(newMedia)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (mediaList.length === 0) {
+      setError('Adicione pelo menos uma imagem ou vídeo.')
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -69,7 +125,10 @@ export default function EvolutionForm({ update, onSuccess, onCancel }: Evolution
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          media: mediaList
+        })
       })
 
       if (!res.ok) {
@@ -146,26 +205,65 @@ export default function EvolutionForm({ update, onSuccess, onCancel }: Evolution
           </select>
         </div>
 
-        <div className="col-span-full space-y-2">
-          <label className="text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold flex items-center gap-2">
-            <ImageIcon size={12} /> URL da Imagem (Google Drive / Fotos)
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="url"
-              value={formData.image_url}
-              onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-              className="flex-grow h-10 px-3 rounded-architectural border border-ghost-border focus:border-primary outline-none transition-all font-body text-sm"
-              placeholder="https://..."
-              required
-            />
-            {formData.image_url && (
-              <a href={formData.image_url} target="_blank" rel="noopener noreferrer" className="p-2 text-primary hover:bg-primary/5 rounded-architectural transition-all">
-                <ExternalLink size={20} />
-              </a>
-            )}
+        <div className="col-span-full space-y-4">
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold flex items-center gap-2">
+              <ImageIcon size={12} /> Adicionar Mídia (Imagens/Vídeos do Google Drive)
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={newMediaUrl}
+                onChange={(e) => setNewMediaUrl(e.target.value)}
+                className="flex-grow h-10 px-3 rounded-architectural border border-ghost-border focus:border-primary outline-none transition-all font-body text-sm"
+                placeholder="https://drive.google.com/..."
+              />
+              <button
+                type="button"
+                onClick={addMedia}
+                className="px-4 py-2 bg-surface-low text-primary hover:bg-primary hover:text-white rounded-architectural text-xs font-bold uppercase tracking-widest transition-all"
+              >
+                Adicionar
+              </button>
+            </div>
           </div>
-          <p className="text-[10px] text-tertiary italic">Certifique-se de que o link é público ou compartilhado com os sócios.</p>
+
+          {mediaList.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4 bg-surface-low rounded-architectural border border-ghost-border">
+              {mediaList.map((m, idx) => (
+                <div key={idx} className={`relative group aspect-video rounded-architectural overflow-hidden border-2 transition-all ${m.is_cover ? 'border-primary' : 'border-transparent'}`}>
+                  <img src={getDirectDriveImageUrl(m.media_url)} alt={`Mídia ${idx + 1}`} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                    {!m.is_cover && (
+                      <button
+                        type="button"
+                        onClick={() => setCover(idx)}
+                        className="px-2 py-1 bg-primary text-white text-[9px] font-bold uppercase rounded"
+                      >
+                        Definir Capa
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeMedia(idx)}
+                      className="px-2 py-1 bg-red-500 text-white text-[9px] font-bold uppercase rounded"
+                    >
+                      Remover
+                    </button>
+                    <a href={m.media_url} target="_blank" rel="noopener noreferrer" className="p-1 bg-white/20 text-white rounded-full hover:bg-white/40">
+                      <ExternalLink size={12} />
+                    </a>
+                  </div>
+                  {m.is_cover && (
+                    <div className="absolute top-1 left-1 bg-primary text-white text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter">
+                      Capa
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="text-[10px] text-tertiary italic">A mídia marcada como "Capa" será exibida na listagem principal.</p>
         </div>
 
         <div className="col-span-full space-y-2">

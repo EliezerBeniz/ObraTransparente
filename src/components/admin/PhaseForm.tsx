@@ -134,17 +134,6 @@ export default function PhaseForm({ phase, suggestedOrder, onSuccess, onCancel }
           </select>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold flex items-center gap-2">
-            <ListOrdered size={12} /> Ordem Exibição
-          </label>
-          <input
-            type="number"
-            value={formData.order_index}
-            onChange={(e) => setFormData({ ...formData, order_index: Number(e.target.value) })}
-            className="w-full h-10 px-3 rounded-architectural border border-ghost-border focus:border-primary outline-none transition-all font-body text-sm"
-          />
-        </div>
 
         <div className="space-y-2">
           <label className="text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold flex items-center gap-2">

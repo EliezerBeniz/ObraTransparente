@@ -29,18 +29,32 @@ export function ExpenseCard({
                  <span className="ml-2 text-[10px] text-tertiary">({expense.quantity} un)</span>
                )}
              </p>
-             {variant === 'admin' && (
-               <span className="text-[9px] px-2 py-0.5 bg-surface-low text-tertiary rounded uppercase font-bold tracking-tighter flex-shrink-0">
-                 {expense.category}
-               </span>
-             )}
+              {variant === 'admin' && (
+                <div className="flex gap-2">
+                  <span className="text-[9px] px-2 py-0.5 bg-surface-low text-tertiary rounded uppercase font-bold tracking-tighter flex-shrink-0">
+                    {expense.category}
+                  </span>
+                  {expense.project_phases?.title && (
+                    <span className="text-[9px] px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded uppercase font-bold tracking-tighter flex-shrink-0">
+                      {expense.project_phases.title}
+                    </span>
+                  )}
+                </div>
+              )}
           </div>
           
           <div className="flex flex-wrap items-center gap-2 mt-1">
             {variant === 'compact' && (
-               <span className="text-[10px] text-tertiary bg-surface-low px-2 py-0.5 rounded uppercase tracking-tighter">
-                 {expense.category}
-               </span>
+               <div className="flex gap-1.5">
+                 <span className="text-[10px] text-tertiary bg-surface-low px-2 py-0.5 rounded uppercase tracking-tighter">
+                   {expense.category}
+                 </span>
+                 {expense.project_phases?.title && (
+                   <span className="text-[10px] text-primary bg-primary/5 px-2 py-0.5 rounded uppercase tracking-tighter border border-primary/10">
+                     {expense.project_phases.title}
+                   </span>
+                 )}
+               </div>
             )}
             <span className="text-[10px] text-tertiary font-body">
               {formatDate(expense.date)}

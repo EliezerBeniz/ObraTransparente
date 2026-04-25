@@ -14,6 +14,7 @@ interface Update {
   image_url: string
   created_at: string
   project_phases?: { title: string }
+  project_update_media?: { id: string }[]
 }
 
 interface EvolutionListProps {
@@ -23,97 +24,106 @@ interface EvolutionListProps {
 }
 
 export default function EvolutionList({ updates, onEdit, onDelete }: EvolutionListProps) {
+  if (updates.length === 0) {
+    return (
+      <div className="text-center py-20 bg-surface-low/30 rounded-architectural border border-dashed border-ghost-border">
+        <div className="inline-flex p-4 bg-surface-low rounded-full mb-4 text-tertiary/20">
+          <ImageIcon size={48} />
+        </div>
+        <h3 className="text-lg font-heading text-tertiary">Nenhum registro encontrado</h3>
+        <p className="text-sm text-tertiary/60 font-body mt-2">Nenhuma atualização registrada no diário de obra.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white border border-ghost-border rounded-architectural overflow-hidden shadow-soft">
-      <table className="w-full text-left font-body">
-        <thead className="bg-surface-low/50 border-b border-ghost-border">
-          <tr>
-            <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Imagem</th>
-            <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Título / Registro</th>
-            <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Etapa</th>
-            <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Data</th>
-            <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold text-right">Ações</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-ghost-border">
-          {updates.map((update) => (
-            <tr key={update.id} className="hover:bg-surface-low/30 transition-colors group">
-              <td className="px-6 py-4">
-                <div className="w-16 h-12 rounded-architectural overflow-hidden border border-ghost-border bg-surface-low">
-                   <img 
-                    src={getDirectDriveImageUrl(update.image_url)} 
-                    alt={update.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&q=80&w=200'
-                    }}
-                  />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-[fadeIn_0.5s_ease-out]">
+      {updates.map((update) => (
+        <div 
+          key={update.id}
+          className="group bg-surface-lowest hover:bg-white rounded-architectural border border-ghost-border transition-all hover:shadow-xl hover:shadow-primary/5 relative overflow-hidden flex flex-col"
+        >
+          {/* Image Header */}
+          <div className="aspect-video bg-surface-low relative overflow-hidden">
+            <img 
+              src={getDirectDriveImageUrl(update.image_url)} 
+              alt={update.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&q=80&w=800'
+              }}
+            />
+            
+            {/* Phase Badge */}
+            <div className="absolute top-3 left-3 flex flex-col gap-2">
+              {update.project_phases?.title ? (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md text-white text-[9px] font-bold uppercase tracking-widest border border-white/10">
+                  <Activity size={10} />
+                  {update.project_phases.title}
                 </div>
-              </td>
-              <td className="px-6 py-4">
-                <div className="space-y-0.5">
-                  <div className="text-sm font-heading font-bold text-foreground group-hover:text-primary transition-colors">
-                    {update.title}
-                  </div>
-                  {update.description && (
-                    <div className="text-[10px] text-tertiary line-clamp-1 max-w-xs">{update.description}</div>
-                  )}
+              ) : (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md text-white text-[9px] font-bold uppercase tracking-widest border border-white/10">
+                  Geral
                 </div>
-              </td>
-              <td className="px-6 py-4">
-                {update.project_phases?.title ? (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-heading font-bold uppercase tracking-tighter">
-                    <Activity size={10} />
-                    {update.project_phases.title}
-                  </div>
-                ) : (
-                  <span className="text-[10px] text-tertiary italic">Geral</span>
-                )}
-              </td>
-              <td className="px-6 py-4">
-                <div className="flex items-center gap-2 text-tertiary text-xs">
-                  <Calendar size={14} className="opacity-40" />
-                  {format(new Date(update.date), "dd/MM/yyyy", { locale: ptBR })}
+              )}
+
+              {update.project_update_media && update.project_update_media.length > 1 && (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/80 backdrop-blur-md text-white text-[9px] font-bold uppercase tracking-widest border border-white/10 w-fit">
+                  <ImageIcon size={10} />
+                  +{update.project_update_media.length - 1} fotos
                 </div>
-              </td>
-              <td className="px-6 py-4 text-right">
-                <div className="flex items-center justify-end gap-2">
-                  <a
-                    href={update.image_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-all"
-                    title="Ver Fonte"
-                  >
-                    <ExternalLink size={16} />
-                  </a>
-                  <button
-                    onClick={() => onEdit(update)}
-                    className="p-2 text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-all"
-                    title="Editar"
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                  <button
-                    onClick={() => onDelete(update.id)}
-                    className="p-2 text-tertiary hover:text-red-600 hover:bg-red-50 rounded-architectural transition-all"
-                    title="Excluir"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-          {updates.length === 0 && (
-            <tr>
-              <td colSpan={4} className="px-6 py-12 text-center text-tertiary italic text-sm">
-                Nenhuma atualização registrada no diário de obra.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+              )}
+            </div>
+
+            {/* Quick Actions Overlay */}
+            <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity translate-y-[-10px] group-hover:translate-y-0 transition-transform duration-300">
+              <a
+                href={update.image_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-white/90 hover:bg-white text-tertiary hover:text-primary rounded-architectural shadow-sm transition-all"
+                title="Ver Fonte"
+              >
+                <ExternalLink size={14} />
+              </a>
+              <button
+                onClick={() => onEdit(update)}
+                className="p-2 bg-white/90 hover:bg-white text-tertiary hover:text-primary rounded-architectural shadow-sm transition-all"
+                title="Editar"
+              >
+                <Edit2 size={14} />
+              </button>
+              <button
+                onClick={() => onDelete(update.id)}
+                className="p-2 bg-white/90 hover:bg-white text-tertiary hover:text-red-600 rounded-architectural shadow-sm transition-all"
+                title="Excluir"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-5 flex-grow flex flex-col">
+            <div className="flex items-center gap-2 mb-2 text-tertiary">
+              <Calendar size={12} className="opacity-60" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">
+                {format(new Date(update.date.includes('T') ? update.date : update.date + 'T12:00:00'), "dd/MM/yyyy", { locale: ptBR })}
+              </span>
+            </div>
+            
+            <h4 className="font-heading text-lg text-foreground group-hover:text-primary transition-colors leading-tight mb-2 line-clamp-1">
+              {update.title}
+            </h4>
+            
+            {update.description && (
+              <p className="text-sm text-tertiary font-body line-clamp-2 mt-auto">
+                {update.description}
+              </p>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

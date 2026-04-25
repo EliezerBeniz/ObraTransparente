@@ -22,14 +22,22 @@ export function getDirectDriveImageUrl(url: string) {
     if (url.includes('/file/d/')) {
       fileId = url.split('/file/d/')[1].split('/')[0].split('?')[0];
     } 
-    // Tenta extrair ID do formato ?id=ID
-    else if (url.includes('?id=')) {
-      fileId = url.split('?id=')[1].split('&')[0];
+    // Tenta extrair ID do formato ?id=ID ou &id=ID
+    else if (url.includes('id=')) {
+      const parts = url.split('id=');
+      if (parts.length > 1) {
+        fileId = parts[1].split('&')[0].split('/')[0].split('?')[0];
+      }
+    }
+    // Tenta extrair ID do formato drive.google.com/open?id=ID
+    else if (url.includes('open?id=')) {
+      fileId = url.split('open?id=')[1].split('&')[0];
     }
     
     if (fileId) {
-      // Usar o endpoint lh3 que é mais robusto para miniaturas e carregamento direto
-      return `https://lh3.googleusercontent.com/d/${fileId}`;
+      // Endpoint de miniatura é o mais robusto para visualização pública (Anyone with the link)
+      // sz=w1200 garante uma boa resolução
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`;
     }
   } catch (e) {
     console.error('Erro ao converter link do Drive:', e);
@@ -67,4 +75,12 @@ export function exportToCSV(data: any[], filename: string) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+export function isLendingDelayed(expectedReturnDate: string | null | undefined, status: string) {
+  if (!expectedReturnDate || status === 'Devolvido') return false;
+  
+  // Set to end of the expected day
+  const deadline = new Date(expectedReturnDate + 'T23:59:59');
+  return deadline < new Date();
 }

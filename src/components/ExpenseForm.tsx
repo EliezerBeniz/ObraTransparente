@@ -17,7 +17,7 @@ interface ExpenseFormProps {
   submitting: boolean;
 }
 
-const categories = ["Material", "Mão de Obra", "Projetos", "Legal", "Outros"];
+const categories = ["Material", "Equipamento", "Mão de Obra", "Projetos", "Legal", "Outros"];
 
 export function ExpenseForm({
   initialData,
