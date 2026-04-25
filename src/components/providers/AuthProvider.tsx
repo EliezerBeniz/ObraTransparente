@@ -13,9 +13,38 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper to manage cookies in the browser
+const setRoleCookie = (role: string | null) => {
+  if (typeof document === 'undefined') return;
+  if (!role) {
+    document.cookie = "app-user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+    return;
+  }
+  // Set cookie for 7 days
+  const date = new Date();
+  date.setTime(date.getTime() + (7 * 24 * 60 * 60 * 1000));
+  document.cookie = `app-user-role=${role}; path=/; expires=${date.toUTCString()}; SameSite=Lax`;
+};
+
+const getRoleCookie = (): 'admin' | 'viewer' | 'convidado' | null => {
+  if (typeof document === 'undefined') return null;
+  const name = "app-user-role=";
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const ca = decodedCookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1);
+    if (c.indexOf(name) === 0) {
+      const val = c.substring(name.length, c.length);
+      if (val === 'admin' || val === 'viewer' || val === 'convidado') return val;
+    }
+  }
+  return null;
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<'admin' | 'viewer' | 'convidado' | null>(null);
+  const [role, setRole] = useState<'admin' | 'viewer' | 'convidado' | null>(() => getRoleCookie());
   const [loading, setLoading] = useState(true);
   
   const [supabase] = useState(() => createClient());
@@ -47,7 +76,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .maybeSingle();
         
         if (error) {
-          // If it's a lock error, retry up to 3 times
           if ((error.message?.includes('Lock') || error.details?.includes('Lock')) && retryCount < 3) {
             console.warn(`Auth lock conflict detected for role fetch. Retrying in ${500 * (retryCount + 1)}ms...`);
             await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1)));
@@ -55,7 +83,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           
           console.error('Role fetch failed permanently:', error);
-          // If we already have a role (e.g. from another tab), don't overwrite it with viewer on error
           return role || 'viewer';
         }
 
@@ -67,9 +94,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userRole = data.role?.trim()?.toLowerCase();
         console.debug('Resolved role for', userId, ':', userRole);
         
-        if (userRole === 'admin') return 'admin';
-        if (userRole === 'convidado') return 'convidado';
-        return 'viewer';
+        const finalRole = (userRole === 'admin' || userRole === 'convidado') ? userRole : 'viewer';
+        setRoleCookie(finalRole); // Cache it
+        return finalRole;
       } catch (err) {
         console.error('CheckRole critical failure:', err);
         return role || 'viewer';
@@ -85,14 +112,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(newUser);
         
         if (newUser) {
-          // Fetch role only if we have a user
-          const role = await checkRole(newUser.id);
+          const fetchedRole = await checkRole(newUser.id);
           if (mounted) {
-            setRole(role);
+            setRole(fetchedRole);
             setLoading(false);
           }
         } else {
           setRole(null);
+          setRoleCookie(null);
           setLoading(false);
         }
         
@@ -109,26 +136,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      // Create a timeout promise to ensure we don't hang if Supabase is unresponsive
       const timeoutPromise = new Promise((resolve) => 
         setTimeout(() => resolve('timeout'), 2000)
       );
       
-      // Execute sign out with a 2 second timeout FIRST
       await Promise.race([
         supabase.auth.signOut(),
         timeoutPromise
       ]);
       
-      // Clear data only after
       localStorage.clear();
       sessionStorage.clear();
+      setRoleCookie(null);
     } catch (error) {
       console.warn('Alerta visual durante logout ignorado:', error);
       localStorage.clear();
       sessionStorage.clear();
+      setRoleCookie(null);
     } finally {
-      // ALWAYS redirect, even if API fails or hangs
       window.location.href = '/?logout=1';
     }
   };

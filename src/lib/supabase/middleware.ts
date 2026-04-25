@@ -55,6 +55,13 @@ export async function updateSession(request: NextRequest) {
 
   // 3. Se ESTIVER logado mas NÃO for admin e tentar acessar /admin/*
   if (user && request.nextUrl.pathname.startsWith('/admin')) {
+      // Fast path: Check cookie first
+      const roleCookie = request.cookies.get('app-user-role')?.value;
+      if (roleCookie === 'admin') {
+        return supabaseResponse;
+      }
+
+      // Fallback: Check database if cookie is missing or not admin
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')

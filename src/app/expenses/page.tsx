@@ -6,6 +6,7 @@ import { ExpenseWithAttachments, Profile } from '@/lib/types';
 import { formatCurrency, formatDate, exportToCSV } from '@/lib/utils';
 import { ExpenseList } from '@/components/ExpenseList';
 import { ReportPrintView } from '@/components/ReportPrintView';
+import { InvestmentChart } from '@/components/InvestmentChart';
 import { Advance } from '@/lib/finance';
 
 export default function ExpensesPage() {
@@ -78,6 +79,26 @@ export default function ExpensesPage() {
     }
 
     return matchesCategory && matchesSearch && matchesDate;
+  });
+
+  const filteredAdvances = advances.filter(adv => {
+    let matchesDate = true;
+    if (datePreset && datePreset !== 'custom') {
+      const days = parseInt(datePreset, 10);
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - days);
+      const advDate = new Date(adv.date);
+      matchesDate = advDate >= cutoff;
+    } else if (datePreset === 'custom') {
+      const advDate = new Date(adv.date);
+      if (startDate) {
+        matchesDate = matchesDate && advDate >= new Date(startDate);
+      }
+      if (endDate) {
+        matchesDate = matchesDate && advDate <= new Date(endDate);
+      }
+    }
+    return matchesDate;
   });
 
   if (loading) {
@@ -194,6 +215,14 @@ export default function ExpensesPage() {
           ))}
         </div>
       </div>
+
+      {/* Investment Chart */}
+      <InvestmentChart 
+        expenses={filteredExpenses} 
+        socios={socios} 
+        advances={filteredAdvances} 
+        title="Evolução do Investimento por Sócio"
+      />
 
       {/* Ledger */}
       <div className="bg-surface-lowest rounded-architectural border border-ghost-border shadow-sm overflow-hidden">

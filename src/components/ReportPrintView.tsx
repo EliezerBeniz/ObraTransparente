@@ -235,8 +235,17 @@ export function ReportPrintView({ expenses, socios, advances, onClose, filtersIn
                      </td>
                      <td className="py-2 pr-2 text-xs">{expense.category}</td>
                      <td className="py-2 pr-2">
-                        {expense.title}
-                        {expense.quantity && expense.quantity > 1 && ` (${expense.quantity} un)`}
+                        <div className="font-medium text-black">{expense.title}</div>
+                        {expense.quantity && expense.quantity > 1 && (
+                          <div className="text-[10px] text-gray-500 italic">Qtd: {expense.quantity} un</div>
+                        )}
+                        {expense.expense_participants && expense.expense_participants.length > 0 && (
+                          <div className="text-[10px] text-gray-600 mt-0.5 leading-tight italic">
+                            Pagantes: {expense.expense_participants.map(p => 
+                              `${p.profiles?.full_name?.split(' ')[0] || 'Sócio'} (${formatCurrency(p.amount_paid)})`
+                            ).join(', ')}
+                          </div>
+                        )}
                      </td>
                      <td className="py-2 pr-2 text-xs">{expense.status}</td>
                      <td className="py-2 text-right font-medium">{formatCurrency(expense.amount)}</td>

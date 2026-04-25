@@ -61,7 +61,7 @@ export function ExpenseCard({
                     className="flex items-center gap-1.5 text-[9px] px-1.5 py-0.5 bg-secondary/10 text-secondary border border-secondary/20 rounded font-bold uppercase tracking-tight flex-shrink-0"
                     title={`Pago: ${formatCurrency(p.amount_paid)}`}
                   >
-                    {p.profiles?.full_name?.split(' ')[0] || 'Sócio'}
+                    {p.profiles?.full_name?.split(' ')[0] || 'Sócio'} ({formatCurrency(p.amount_paid)})
                     {(p as any).receipt_url && (
                       <a 
                         href={(p as any).receipt_url} 

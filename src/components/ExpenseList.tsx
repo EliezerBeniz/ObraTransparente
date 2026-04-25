@@ -116,7 +116,7 @@ export function ExpenseList({
                               <div key={p.id || pIdx} className="flex items-center gap-1 bg-surface-low border border-ghost-border px-1.5 py-0.5 rounded">
                                 <Users size={10} className="text-tertiary opacity-40 shrink-0" />
                                 <span className="text-[9px] font-bold text-tertiary uppercase tracking-tight" title={formatCurrency(p.amount_paid)}>
-                                  {p.profiles?.full_name?.split(' ')[0] || 'Sócio'}
+                                  {p.profiles?.full_name?.split(' ')[0] || 'Sócio'} ({formatCurrency(p.amount_paid)})
                                 </span>
                                 {(p as any).receipt_url && (
                                   <a 
