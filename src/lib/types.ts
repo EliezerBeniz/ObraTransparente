@@ -37,6 +37,7 @@ export interface Expense {
   paid_from_fund?: boolean;
   supplier_id?: string | null;
   supplier?: { name: string } | null;
+  phase_id?: string | null;
 }
 
 export interface Attachment {
