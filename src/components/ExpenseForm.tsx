@@ -35,8 +35,11 @@ export function ExpenseForm({
     cat: 'Material',
     status: 'Pendente',
     quantity: '1',
-    file_url: ''
+    file_url: '',
+    phase_id: ''
   });
+
+  const [phases, setPhases] = useState<{id: string, title: string}[]>([]);
 
   const [socios, setSocios] = useState<Profile[]>([]);
   const [participants, setParticipants] = useState<{ user_id: string; amount_paid: number; receipt_url?: string }[]>([]);
@@ -53,6 +56,21 @@ export function ExpenseForm({
         setSocios(filtered);
       })
       .catch(err => console.error('Error fetching socios:', err));
+
+    fetch('/api/phases')
+      .then(res => res.json())
+      .then(data => {
+        setPhases(data);
+        // Se estiver criando nova despesa (sem initialData), 
+        // pré-seleciona a etapa que estiver em andamento
+        if (!initialData) {
+          const inProgress = data.find((p: any) => p.status === 'in_progress');
+          if (inProgress) {
+            setForm(prev => ({ ...prev, phase_id: inProgress.id }));
+          }
+        }
+      })
+      .catch(err => console.error('Error fetching phases:', err));
   }, []);
 
   useEffect(() => {
@@ -67,6 +85,7 @@ export function ExpenseForm({
         status: initialData.status,
         quantity: initialData.quantity?.toString() || '1',
         file_url: initialData.attachments?.[0]?.file_url || '',
+        phase_id: initialData.phase_id || '',
       });
 
       if (initialData.expense_participants) {
@@ -135,9 +154,22 @@ export function ExpenseForm({
   };
 
   const addParticipant = () => {
-    if (socios.length > 0) {
-      setParticipants([...participants, { user_id: socios[0].id, amount_paid: 0, receipt_url: '' }]);
+    if (socios.length === 0) return;
+    
+    // Pega o ID do último sócio na lista de participantes
+    const lastUserId = participants.length > 0 ? participants[participants.length - 1].user_id : null;
+    
+    let nextSocio;
+    if (!lastUserId) {
+      nextSocio = socios[0];
+    } else {
+      const lastIdx = socios.findIndex(s => s.id === lastUserId);
+      // Tenta pegar o próximo sócio da lista. Se for o último, repete o último.
+      const nextIdx = lastIdx + 1 < socios.length ? lastIdx + 1 : lastIdx;
+      nextSocio = socios[nextIdx];
     }
+
+    setParticipants([...participants, { user_id: nextSocio.id, amount_paid: 0, receipt_url: '' }]);
   };
 
   const removeParticipant = (index: number) => {
@@ -195,7 +227,8 @@ export function ExpenseForm({
         user_id: p.user_id,
         amount_paid: p.amount_paid,
         receipt_url: p.receipt_url
-      }))
+      })),
+      phase_id: form.phase_id || null
     };
     await onSubmit(payload);
   };
@@ -312,6 +345,20 @@ export function ExpenseForm({
             >
               <option value="Pendente">Pendente</option>
               <option value="Pago">Pago</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] uppercase tracking-widest text-tertiary font-bold block">Etapa da Obra</label>
+            <select
+              value={form.phase_id}
+              onChange={(e) => setForm({ ...form, phase_id: e.target.value })}
+              className="w-full bg-surface-low border-none rounded-architectural px-4 py-3 text-sm font-body text-foreground focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none"
+            >
+              <option value="">Nenhuma Etapa Vinculada</option>
+              {phases.map((p) => (
+                <option key={p.id} value={p.id}>{p.title}</option>
+              ))}
             </select>
           </div>
 

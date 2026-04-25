@@ -4,17 +4,39 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   const supabase = await createClient()
   
-  const { data, error } = await supabase
+  // Fetch phases
+  const { data: phases, error: phasesError } = await supabase
     .from('project_phases')
     .select('*')
     .order('order_index', { ascending: true })
     .order('phase_date', { ascending: true })
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  if (phasesError) {
+    return NextResponse.json({ error: phasesError.message }, { status: 500 })
   }
 
-  return NextResponse.json(data)
+  // Fetch expense totals per phase
+  const { data: expenses, error: expensesError } = await supabase
+    .from('expenses')
+    .select('amount, phase_id')
+    .not('phase_id', 'is', null)
+
+  if (expensesError) {
+    return NextResponse.json({ error: expensesError.message }, { status: 500 })
+  }
+
+  // Map totals to phases
+  const phasesWithCosts = phases.map(phase => {
+    const phaseExpenses = expenses.filter(e => e.phase_id === phase.id)
+    const totalSpent = phaseExpenses.reduce((acc, e) => acc + Number(e.amount), 0)
+    return {
+      ...phase,
+      total_spent: totalSpent,
+      expense_count: phaseExpenses.length
+    }
+  })
+
+  return NextResponse.json(phasesWithCosts)
 }
 
 export async function POST(request: Request) {
@@ -35,7 +57,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { title, description, phase_date, status, order_index } = body
+    const { title, description, phase_date, status, order_index, budget_estimate } = body
     
     // Auto-calculating order if missing (put at end)
     let finalOrder = order_index
@@ -51,7 +73,8 @@ export async function POST(request: Request) {
         description,
         phase_date,
         status: status || 'planned',
-        order_index: finalOrder
+        order_index: finalOrder,
+        budget_estimate: Number(budget_estimate) || 0
       })
       .select()
       .single()

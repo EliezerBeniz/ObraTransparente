@@ -6,7 +6,10 @@ export async function GET() {
   
   const { data, error } = await supabase
     .from('project_updates')
-    .select('*')
+    .select(`
+      *,
+      project_phases (title)
+    `)
     .order('date', { ascending: false })
 
   if (error) {
@@ -34,7 +37,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { title, description, date, image_url } = body
+    const { title, description, date, image_url, phase_id } = body
 
     if (!title || !image_url) {
       return NextResponse.json({ error: 'Título e URL da imagem são obrigatórios.' }, { status: 400 })
@@ -46,7 +49,8 @@ export async function POST(request: Request) {
         title,
         description,
         date: date || new Date().toISOString().split('T')[0],
-        image_url
+        image_url,
+        phase_id: phase_id || null
       })
       .select()
       .single()

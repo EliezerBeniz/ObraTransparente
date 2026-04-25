@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Save, X, Calendar, Type, AlignLeft, Image as ImageIcon, ExternalLink } from 'lucide-react'
+import { Save, X, Calendar, Type, AlignLeft, Image as ImageIcon, ExternalLink, Activity } from 'lucide-react'
 
 interface Update {
   id?: string
@@ -9,6 +9,7 @@ interface Update {
   title: string
   description?: string
   image_url: string
+  phase_id?: string
 }
 
 interface EvolutionFormProps {
@@ -22,8 +23,10 @@ export default function EvolutionForm({ update, onSuccess, onCancel }: Evolution
     title: '',
     description: '',
     date: new Date().toISOString().split('T')[0],
-    image_url: ''
+    image_url: '',
+    phase_id: ''
   })
+  const [phases, setPhases] = useState<{id: string, title: string}[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -32,8 +35,26 @@ export default function EvolutionForm({ update, onSuccess, onCancel }: Evolution
       setFormData({
         ...update,
         description: update.description || '',
+        phase_id: update.phase_id || ''
       })
     }
+  }, [update])
+
+  useEffect(() => {
+    fetch('/api/phases')
+      .then(res => res.json())
+      .then(data => {
+        setPhases(data)
+        // Se estiver criando novo registro (sem update), 
+        // pré-seleciona a etapa em andamento
+        if (!update) {
+          const inProgress = data.find((p: any) => p.status === 'in_progress')
+          if (inProgress) {
+            setFormData(prev => ({ ...prev, phase_id: inProgress.id }))
+          }
+        }
+      })
+      .catch(err => console.error('Error fetching phases:', err))
   }, [update])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,6 +128,22 @@ export default function EvolutionForm({ update, onSuccess, onCancel }: Evolution
             className="w-full h-10 px-3 rounded-architectural border border-ghost-border focus:border-primary outline-none transition-all font-body text-sm"
             required
           />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold flex items-center gap-2">
+            <Activity size={12} /> Etapa da Obra
+          </label>
+          <select
+            value={formData.phase_id}
+            onChange={(e) => setFormData({ ...formData, phase_id: e.target.value })}
+            className="w-full h-10 px-3 rounded-architectural border border-ghost-border focus:border-primary outline-none transition-all font-body text-sm bg-white"
+          >
+            <option value="">Nenhuma Etapa Vinculada</option>
+            {phases.map(p => (
+              <option key={p.id} value={p.id}>{p.title}</option>
+            ))}
+          </select>
         </div>
 
         <div className="col-span-full space-y-2">

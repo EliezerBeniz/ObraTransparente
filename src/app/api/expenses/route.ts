@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { title, description, amount, date, category, status, quantity, file_url, label, participants, paid_from_fund, shopping_item_id } = body
+    const { title, description, amount, date, category, status, quantity, file_url, label, participants, paid_from_fund, shopping_item_id, phase_id } = body
 
     if (paid_from_fund) {
       if (!file_url || !/^https?:\/\/(drive|docs)\.google\.com\//.test(file_url)) {
@@ -79,7 +79,8 @@ export async function POST(request: Request) {
         status,
         quantity: Number(quantity) || 1,
         paid_from_fund: paid_from_fund || false,
-        created_by: user.id
+        created_by: user.id,
+        phase_id: phase_id || null
       })
       .select()
       .single()

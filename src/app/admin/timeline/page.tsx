@@ -84,6 +84,7 @@ export default function AdminTimelinePage() {
         <div className="max-w-3xl mx-auto">
           <PhaseForm 
             phase={editingPhase} 
+            suggestedOrder={phases.length + 1}
             onSuccess={handleSuccess} 
             onCancel={() => { setShowForm(false); setEditingPhase(null); }} 
           />

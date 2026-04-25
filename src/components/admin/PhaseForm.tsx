@@ -10,21 +10,24 @@ interface Phase {
   phase_date: string
   status: 'completed' | 'in_progress' | 'planned'
   order_index: number
+  budget_estimate?: number
 }
 
 interface PhaseFormProps {
   phase?: Phase | null
+  suggestedOrder?: number
   onSuccess: () => void
   onCancel: () => void
 }
 
-export default function PhaseForm({ phase, onSuccess, onCancel }: PhaseFormProps) {
+export default function PhaseForm({ phase, suggestedOrder, onSuccess, onCancel }: PhaseFormProps) {
   const [formData, setFormData] = useState<Phase>({
     title: '',
     description: '',
     phase_date: new Date().toISOString().split('T')[0],
     status: 'planned',
-    order_index: 0
+    order_index: 0,
+    budget_estimate: 0
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -35,8 +38,13 @@ export default function PhaseForm({ phase, onSuccess, onCancel }: PhaseFormProps
         ...phase,
         description: phase.description || '',
       })
+    } else if (suggestedOrder !== undefined) {
+      setFormData(prev => ({
+        ...prev,
+        order_index: suggestedOrder
+      }))
     }
-  }, [phase])
+  }, [phase, suggestedOrder])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -135,6 +143,20 @@ export default function PhaseForm({ phase, onSuccess, onCancel }: PhaseFormProps
             value={formData.order_index}
             onChange={(e) => setFormData({ ...formData, order_index: Number(e.target.value) })}
             className="w-full h-10 px-3 rounded-architectural border border-ghost-border focus:border-primary outline-none transition-all font-body text-sm"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold flex items-center gap-2">
+            <span className="text-secondary">$</span> Orçamento Estimado (R$)
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            value={formData.budget_estimate}
+            onChange={(e) => setFormData({ ...formData, budget_estimate: Number(e.target.value) })}
+            className="w-full h-10 px-3 rounded-architectural border border-ghost-border focus:border-primary outline-none transition-all font-body text-sm"
+            placeholder="0.00"
           />
         </div>
 

@@ -23,7 +23,7 @@ export async function PUT(
 
   try {
     const body = await request.json()
-    const { title, description, date, image_url } = body
+    const { title, description, date, image_url, phase_id } = body
 
     const { data: updatedUpdate, error } = await supabase
       .from('project_updates')
@@ -31,7 +31,8 @@ export async function PUT(
         title,
         description,
         date,
-        image_url
+        image_url,
+        phase_id: phase_id || null
       })
       .eq('id', id)
       .select()

@@ -54,7 +54,7 @@ export async function PUT(
 
   try {
     const body = await request.json()
-    const { title, description, amount, date, category, status, quantity, file_url, label, participants, paid_from_fund } = body
+    const { title, description, amount, date, category, status, quantity, file_url, label, participants, paid_from_fund, phase_id } = body
 
     if (!paid_from_fund) {
       // Participants Validation
@@ -79,7 +79,8 @@ export async function PUT(
         category,
         status,
         quantity: Number(quantity) || 1,
-        paid_from_fund: !!paid_from_fund
+        paid_from_fund: !!paid_from_fund,
+        phase_id: phase_id || null
       })
       .eq('id', id)
 

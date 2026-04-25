@@ -12,6 +12,9 @@ interface Phase {
   phase_date: string
   status: 'completed' | 'in_progress' | 'planned'
   order_index: number
+  budget_estimate?: number
+  total_spent?: number
+  expense_count?: number
 }
 
 interface PhaseListProps {
@@ -48,6 +51,7 @@ export default function PhaseList({ phases, onEdit, onDelete }: PhaseListProps) 
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Título / Etapa</th>
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Data</th>
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Status</th>
+            <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Orçamento / Real</th>
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold text-right">Ações</th>
           </tr>
         </thead>
@@ -84,6 +88,36 @@ export default function PhaseList({ phases, onEdit, onDelete }: PhaseListProps) 
                 }`}>
                   {getStatusIcon(phase.status)}
                   {getStatusLabel(phase.status)}
+                </div>
+              </td>
+              <td className="px-6 py-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-tertiary uppercase tracking-tighter">Est:</span>
+                    <span className="text-xs font-heading font-bold text-foreground">
+                      R$ {(phase.budget_estimate || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-tertiary uppercase tracking-tighter">Real:</span>
+                    <span className={`text-xs font-heading font-bold ${
+                      (phase.total_spent || 0) > (phase.budget_estimate || 0) && (phase.budget_estimate || 0) > 0
+                        ? 'text-red-500' 
+                        : 'text-secondary'
+                    }`}>
+                      R$ {(phase.total_spent || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  {phase.budget_estimate ? (
+                    <div className="w-full bg-surface-low h-1 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-500 ${
+                          (phase.total_spent || 0) > (phase.budget_estimate || 0) ? 'bg-red-500' : 'bg-primary'
+                        }`}
+                        style={{ width: `${Math.min(((phase.total_spent || 0) / phase.budget_estimate) * 100, 100)}%` }}
+                      />
+                    </div>
+                  ) : null}
                 </div>
               </td>
               <td className="px-6 py-4 text-right">

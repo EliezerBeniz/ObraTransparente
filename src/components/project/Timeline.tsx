@@ -12,6 +12,8 @@ interface Phase {
   phase_date: string
   status: 'completed' | 'in_progress' | 'planned'
   order_index: number
+  budget_estimate?: number
+  total_spent?: number
 }
 
 interface TimelineProps {
@@ -72,6 +74,36 @@ export default function Timeline({ phases }: TimelineProps) {
                       {phase.description}
                     </p>
                   )}
+
+                  {/* Financial Info */}
+                  <div className="mt-4 pt-4 border-t border-ghost-border/30 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] uppercase tracking-widest text-tertiary font-bold">Orçamento Estimado</span>
+                      <span className="text-xs font-heading font-bold text-foreground">
+                        R$ {(phase.budget_estimate || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] uppercase tracking-widest text-tertiary font-bold">Total Gasto Real</span>
+                      <span className={`text-xs font-heading font-bold ${
+                        (phase.total_spent || 0) > (phase.budget_estimate || 0) && (phase.budget_estimate || 0) > 0
+                          ? 'text-red-500' 
+                          : 'text-secondary'
+                      }`}>
+                        R$ {(phase.total_spent || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    {phase.budget_estimate ? (
+                      <div className="w-full bg-surface-low h-1.5 rounded-full overflow-hidden mt-1">
+                        <div 
+                          className={`h-full transition-all duration-1000 ${
+                            (phase.total_spent || 0) > (phase.budget_estimate || 0) ? 'bg-red-500' : 'bg-primary'
+                          }`}
+                          style={{ width: `${Math.min(((phase.total_spent || 0) / phase.budget_estimate) * 100, 100)}%` }}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </div>

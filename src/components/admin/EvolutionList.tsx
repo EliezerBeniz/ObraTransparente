@@ -13,6 +13,7 @@ interface Update {
   description?: string
   image_url: string
   created_at: string
+  project_phases?: { title: string }
 }
 
 interface EvolutionListProps {
@@ -29,6 +30,7 @@ export default function EvolutionList({ updates, onEdit, onDelete }: EvolutionLi
           <tr>
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Imagem</th>
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Título / Registro</th>
+            <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Etapa</th>
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Data</th>
             <th className="px-6 py-4 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold text-right">Ações</th>
           </tr>
@@ -57,6 +59,16 @@ export default function EvolutionList({ updates, onEdit, onDelete }: EvolutionLi
                     <div className="text-[10px] text-tertiary line-clamp-1 max-w-xs">{update.description}</div>
                   )}
                 </div>
+              </td>
+              <td className="px-6 py-4">
+                {update.project_phases?.title ? (
+                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-heading font-bold uppercase tracking-tighter">
+                    <Activity size={10} />
+                    {update.project_phases.title}
+                  </div>
+                ) : (
+                  <span className="text-[10px] text-tertiary italic">Geral</span>
+                )}
               </td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-2 text-tertiary text-xs">
