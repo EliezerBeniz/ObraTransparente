@@ -125,7 +125,7 @@ export default function ShoppingList({ items, onAdd, onEdit, onDelete, onTransfo
                 </div>
 
                 <div className="mt-6 flex items-center justify-between pt-4 border-t border-ghost-border">
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                      <button 
                         onClick={() => onEdit(item)}
                         className="p-1.5 text-tertiary hover:text-foreground transition-colors"

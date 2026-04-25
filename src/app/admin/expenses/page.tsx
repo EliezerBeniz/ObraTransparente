@@ -200,7 +200,7 @@ export default function AdminExpensesPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-5xl">
+    <div className="space-y-6 md:space-y-8 max-w-5xl mx-auto px-1 sm:px-0">
       {toast && (
         <div className="fixed top-6 right-6 z-50 bg-secondary text-white px-5 py-3 rounded-architectural shadow-lg flex items-center gap-2 text-sm font-body animate-[slideIn_0.3s_ease-out]">
           <CheckCircle2 size={18} />
@@ -208,14 +208,14 @@ export default function AdminExpensesPage() {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-heading text-foreground">
+          <h2 className="text-2xl md:text-3xl font-heading text-foreground">
             {showForm 
               ? (editingExpense ? 'Editar Registro' : 'Nova Inclusão') 
               : 'Gerenciar Despesas'}
           </h2>
-          <p className="text-sm text-tertiary font-body mt-1">
+          <p className="text-xs md:text-sm text-tertiary font-body mt-1">
             {showForm 
               ? 'Preencha os dados abaixo com atenção.' 
               : 'Cadastre, edite ou remova lançamentos financeiros da obra.'}
@@ -224,7 +224,7 @@ export default function AdminExpensesPage() {
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-architectural text-sm font-heading hover:bg-primary-container transition-all shadow-sm active:scale-95"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-architectural text-xs font-heading font-bold uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 active:scale-95"
           >
             <Plus size={16} /> Nova Despesa
           </button>
@@ -244,88 +244,97 @@ export default function AdminExpensesPage() {
 
       {/* Expenses List Component extracted - Only show when NOT in form mode */}
       {!showForm && (
-        <div className="bg-surface-lowest rounded-architectural border border-ghost-border shadow-sm">
-          <div className="px-6 py-4 bg-surface-low/30 border-b border-ghost-border flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div className="flex items-center gap-4 w-full md:w-auto pb-1 md:pb-0">
-               <p className="text-xs text-tertiary font-body whitespace-nowrap">{filteredExpenses.length} despesas</p>
-               
-               <div className="relative">
-                 <button
-                    onClick={() => setShowExportMenu(!showExportMenu)}
-                    className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-white rounded-architectural text-[11px] font-heading hover:bg-primary-container transition-all shadow-sm shrink-0"
-                 >
-                    <Download size={14} /> Exportar <ChevronDown size={12} className={`transition-transform ${showExportMenu ? 'rotate-180' : ''}`} />
-                 </button>
+        <div className="bg-surface-lowest rounded-architectural border border-ghost-border shadow-sm overflow-hidden">
+          <div className="p-4 md:p-6 bg-surface-low/30 border-b border-ghost-border space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+               <div className="flex items-center gap-3">
+                 <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                   {filteredExpenses.length} despesas
+                 </div>
+                 
+                 <div className="relative">
+                   <button
+                      onClick={() => setShowExportMenu(!showExportMenu)}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-surface-lowest border border-ghost-border text-foreground rounded-architectural text-[10px] font-heading font-bold uppercase tracking-widest hover:bg-surface-low transition-all shadow-sm shrink-0"
+                   >
+                      <Download size={14} /> Exportar <ChevronDown size={12} className={`transition-transform ${showExportMenu ? 'rotate-180' : ''}`} />
+                   </button>
 
-                 {showExportMenu && (
-                   <>
-                     <div className="fixed inset-0 z-10" onClick={() => setShowExportMenu(false)} />
-                     <div className="absolute top-full right-0 mt-2 w-48 bg-surface-lowest border border-ghost-border rounded-architectural shadow-xl z-20 py-1.5 animate-[fadeIn_0.2s_ease-out]">
-                       <button
-                         onClick={() => { setShowReport(true); setShowExportMenu(false); }}
-                         className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-body text-foreground hover:bg-surface-low transition-colors text-left"
-                       >
-                         <FileText size={14} className="text-tertiary" /> Exportar PDF (Relatório)
-                       </button>
-                       <button
-                         onClick={() => { exportToCSV(filteredExpenses, 'gastos-obra-admin'); setShowExportMenu(false); }}
-                         className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-body text-foreground hover:bg-surface-low transition-colors text-left border-t border-ghost-border/50"
-                       >
-                         <Download size={14} className="text-tertiary" /> Exportar CSV (Excel)
-                       </button>
-                     </div>
-                   </>
-                 )}
+                   {showExportMenu && (
+                     <>
+                       <div className="fixed inset-0 z-10" onClick={() => setShowExportMenu(false)} />
+                       <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 w-48 bg-surface-lowest border border-ghost-border rounded-architectural shadow-xl z-20 py-1.5 animate-[fadeIn_0.2s_ease-out]">
+                         <button
+                           onClick={() => { setShowReport(true); setShowExportMenu(false); }}
+                           className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-body text-foreground hover:bg-surface-low transition-colors text-left"
+                         >
+                           <FileText size={14} className="text-tertiary" /> Exportar PDF (Relatório)
+                         </button>
+                         <button
+                           onClick={() => { exportToCSV(filteredExpenses, 'gastos-obra-admin'); setShowExportMenu(false); }}
+                           className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-body text-foreground hover:bg-surface-low transition-colors text-left border-t border-ghost-border/50"
+                         >
+                           <Download size={14} className="text-tertiary" /> Exportar CSV (Excel)
+                         </button>
+                       </div>
+                     </>
+                   )}
+                 </div>
                </div>
-            </div>
-            <div className="flex flex-col sm:flex-row flex-wrap gap-3 w-full md:w-auto md:justify-end">
-              <button
+
+               <button
                 onClick={() => setCategoryFilter(categoryFilter === 'Mão de Obra' ? '' : 'Mão de Obra')}
-                className={`px-3 py-2 rounded-architectural text-[10px] font-bold uppercase tracking-wider transition-all border ${
+                className={`w-full sm:w-auto px-4 py-2 rounded-architectural text-[10px] font-black uppercase tracking-widest transition-all border ${
                   categoryFilter === 'Mão de Obra'
-                    ? 'bg-primary/10 border-primary/20 text-primary'
-                    : 'bg-surface-low border-ghost-border text-tertiary hover:border-tertiary/30'
+                    ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
+                    : 'bg-surface-lowest border-ghost-border text-tertiary hover:border-tertiary/30'
                 }`}
               >
                 Filtrar Pedreiros
               </button>
-              <div className="relative flex-grow sm:flex-grow-0 sm:min-w-[200px]">
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="relative">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary opacity-50" />
                 <input
                   type="text"
                   placeholder="Buscar por título..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-white border border-ghost-border rounded-architectural text-xs font-body text-foreground focus:ring-1 focus:ring-primary/20 outline-none transition-all placeholder:text-tertiary/40"
+                  className="w-full pl-9 pr-3 py-2.5 bg-white border border-ghost-border rounded-architectural text-xs font-body text-foreground focus:ring-2 focus:ring-primary/10 outline-none transition-all placeholder:text-tertiary/40"
                 />
               </div>
+              
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="py-2 pl-3 pr-8 bg-white border border-ghost-border rounded-architectural text-xs font-body text-foreground focus:ring-1 focus:ring-primary/20 outline-none appearance-none"
-                style={{ backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23a1a1aa\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right .5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
+                className="w-full py-2.5 pl-3 pr-10 bg-white border border-ghost-border rounded-architectural text-xs font-body text-foreground focus:ring-2 focus:ring-primary/10 outline-none appearance-none transition-all"
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23a1a1aa\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right .75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.2em' }}
               >
                 <option value="">Todas as categorias</option>
                 {uniqueCategories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
+
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="py-2 pl-3 pr-8 bg-white border border-ghost-border rounded-architectural text-xs font-body text-foreground focus:ring-1 focus:ring-primary/20 outline-none appearance-none"
-                style={{ backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23a1a1aa\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right .5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
+                className="w-full py-2.5 pl-3 pr-10 bg-white border border-ghost-border rounded-architectural text-xs font-body text-foreground focus:ring-2 focus:ring-primary/10 outline-none appearance-none transition-all"
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23a1a1aa\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right .75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.2em' }}
               >
                 <option value="">Todos os status</option>
                 {uniqueStatuses.map(status => (
                   <option key={status} value={status}>{status}</option>
                 ))}
               </select>
+
               <select
                 value={datePreset}
                 onChange={(e) => setDatePreset(e.target.value)}
-                className="py-2 pl-3 pr-8 bg-white border border-ghost-border rounded-architectural text-xs font-body text-foreground focus:ring-1 focus:ring-primary/20 outline-none appearance-none"
-                style={{ backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23a1a1aa\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right .5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
+                className="w-full py-2.5 pl-3 pr-10 bg-white border border-ghost-border rounded-architectural text-xs font-body text-foreground focus:ring-2 focus:ring-primary/10 outline-none appearance-none transition-all"
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%23a1a1aa\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right .75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.2em' }}
               >
                 <option value="30">Últimos 30 dias</option>
                 <option value="60">Últimos 60 dias</option>
@@ -333,21 +342,27 @@ export default function AdminExpensesPage() {
                 <option value="">Todo o período</option>
                 <option value="custom">Personalizado...</option>
               </select>
+
               {datePreset === 'custom' && (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="py-2 px-3 bg-white border border-ghost-border rounded-architectural text-xs font-body text-foreground focus:ring-1 focus:ring-primary/20 outline-none"
-                  />
-                  <span className="text-tertiary text-xs">até</span>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="py-2 px-3 bg-white border border-ghost-border rounded-architectural text-xs font-body text-foreground focus:ring-1 focus:ring-primary/20 outline-none"
-                  />
+                <div className="col-span-full grid grid-cols-2 gap-3 animate-[fadeIn_0.2s_ease-out]">
+                  <div className="flex items-center gap-2 bg-white border border-ghost-border rounded-architectural px-3">
+                    <span className="text-[9px] text-tertiary font-bold uppercase">De</span>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-full py-2.5 text-xs font-body text-foreground outline-none bg-transparent"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 bg-white border border-ghost-border rounded-architectural px-3">
+                    <span className="text-[9px] text-tertiary font-bold uppercase">Até</span>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full py-2.5 text-xs font-body text-foreground outline-none bg-transparent"
+                    />
+                  </div>
                 </div>
               )}
             </div>

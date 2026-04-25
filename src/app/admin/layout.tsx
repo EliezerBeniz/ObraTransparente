@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, LogOut, FileText, Settings, Users, Store, FolderOpen, Clock, Camera, Hammer, Wrench, ShoppingBag, Wallet, ChevronRight, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, LogOut, FileText, Settings, Users, Store, FolderOpen, Clock, Camera, Hammer, Wrench, ShoppingBag, Wallet, ChevronRight, BarChart3, X, Menu } from 'lucide-react';
 
 import { useAuth } from '@/components/providers/AuthProvider';
 
@@ -14,12 +14,11 @@ export default function AdminLayout({
 }) {
   const { user, role, signOut, loading } = useAuth();
   const router = useRouter();
-
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Only redirect if loading is definitively finished, and we are sure there is no user OR the role is definitively not admin
-    // Added a small delay check: if we have a user but role is null, we stay in 'loading' state instead of jumping to home
     if (!loading) {
       if (!user) {
         router.push('/');
@@ -28,6 +27,11 @@ export default function AdminLayout({
       }
     }
   }, [user, role, loading, router]);
+
+  // Close mobile menu when pathname changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   if (loading) {
     return (
@@ -60,10 +64,43 @@ export default function AdminLayout({
   };
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex bg-background relative">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-ghost-border z-20 flex items-center justify-between px-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-primary rounded-architectural flex items-center justify-center text-white shadow-md">
+            <LayoutDashboard size={16} />
+          </div>
+          <h1 className="text-sm font-heading font-bold text-foreground uppercase tracking-tight">Admin</h1>
+        </div>
+        <button 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 text-tertiary hover:text-primary transition-colors"
+          aria-label="Toggle Menu"
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <div className="p-1 space-y-1.5 w-8">
+            <div className="h-0.5 w-full bg-current rounded-full" />
+            <div className="h-0.5 w-full bg-current rounded-full" />
+            <div className="h-0.5 w-3/4 bg-current rounded-full" />
+          </div>}
+        </button>
+      </div>
+
+      {/* Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-30 transition-opacity animate-in fade-in duration-300"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-72 bg-surface-lowest border-r border-ghost-border flex flex-col fixed h-full z-10 shadow-sm">
-        <div className="p-6 border-b border-ghost-border bg-white">
+      <aside className={`
+        fixed inset-y-0 left-0 z-40 w-72 bg-surface-lowest border-r border-ghost-border flex flex-col h-full shadow-xl lg:shadow-sm
+        transition-transform duration-300 ease-in-out transform
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="p-6 border-b border-ghost-border bg-white flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-3 group">
             <div className="w-10 h-10 bg-primary rounded-architectural flex items-center justify-center text-white shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
               <LayoutDashboard size={20} />
@@ -73,6 +110,12 @@ export default function AdminLayout({
               <p className="text-[9px] text-tertiary uppercase tracking-wider mt-0.5 font-bold">Painel de Controle</p>
             </div>
           </Link>
+          <button 
+            className="lg:hidden text-tertiary hover:text-foreground"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="flex-1 p-4 space-y-6 overflow-y-auto custom-scrollbar">
@@ -130,8 +173,8 @@ export default function AdminLayout({
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 ml-72 flex flex-col">
-        <main className="p-8">
+      <div className="flex-1 lg:ml-72 flex flex-col pt-16 lg:pt-0 min-w-0 overflow-x-hidden">
+        <main className="p-4 md:p-8 w-full">
           {children}
         </main>
       </div>

@@ -94,43 +94,45 @@ export function ExpenseCard({
         </div>
       </div>
       
-      <div className="flex items-center justify-between sm:justify-end gap-6 flex-shrink-0 border-t sm:border-t-0 border-ghost-border/30 pt-3 sm:pt-0">
+      <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 flex-shrink-0 border-t sm:border-t-0 border-ghost-border/30 pt-4 sm:pt-0">
         <div className="text-left sm:text-right">
-          <p className="text-base sm:text-sm font-heading text-foreground tabular-nums">{formatCurrency(expense.amount)}</p>
+          <p className="text-lg sm:text-sm font-heading text-foreground tabular-nums font-bold">{formatCurrency(expense.amount)}</p>
           {variant === 'admin' && (
-             <p className={`text-[10px] mt-0.5 ${expense.status === 'Pago' ? 'text-secondary' : 'text-primary font-bold'}`}>
+             <p className={`text-[10px] mt-0.5 uppercase tracking-widest font-black ${expense.status === 'Pago' ? 'text-secondary' : 'text-primary'}`}>
                {expense.status}
              </p>
           )}
         </div>
         
         {variant === 'compact' && (
-           <div className="opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+           <div className="md:opacity-0 group-hover:opacity-100 transition-opacity ml-2">
              <AttachmentLinks attachments={expense.attachments} />
            </div>
         )}
         
         {variant === 'admin' && (
-           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+           <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
               {expense.attachments && expense.attachments.length > 0 && (
-                <AttachmentLinks attachments={expense.attachments} />
+                <div className="mr-1">
+                  <AttachmentLinks attachments={expense.attachments} />
+                </div>
               )}
               {onEdit && (
                 <button
                   onClick={() => onEdit(expense)}
-                  className="p-2 text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-all"
+                  className="p-2.5 text-tertiary hover:text-primary hover:bg-primary/5 rounded-architectural transition-all active:scale-90"
                   title="Editar"
                 >
-                  <Edit3 size={16} />
+                  <Edit3 size={18} />
                 </button>
               )}
               {onDelete && (
                 <button
                   onClick={() => onDelete(expense.id)}
-                  className="p-2 text-tertiary hover:text-red-500 hover:bg-red-50 rounded-architectural transition-all"
+                  className="p-2.5 text-tertiary hover:text-red-500 hover:bg-red-50 rounded-architectural transition-all active:scale-90"
                   title="Excluir"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={18} />
                 </button>
               )}
            </div>

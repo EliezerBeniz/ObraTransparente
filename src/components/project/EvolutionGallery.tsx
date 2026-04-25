@@ -88,15 +88,24 @@ export default function EvolutionGallery({ updates }: EvolutionGalleryProps) {
               <div className="mt-auto pt-4 border-t border-ghost-border/50">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-2">Outras mídias deste dia:</p>
                 <div className="flex flex-wrap gap-2">
-                  {update.project_update_media.filter(m => !m.is_cover).map((m, idx) => (
+                  {update.project_update_media
+                    .filter(m => !m.is_cover && m.media_url !== update.image_url)
+                    .map((m, idx) => (
                     <a 
                       key={m.id || idx}
                       href={m.media_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-8 h-8 rounded border border-ghost-border overflow-hidden hover:border-primary transition-all"
+                      className="w-12 h-12 rounded-lg border border-ghost-border overflow-hidden hover:border-primary transition-all shadow-sm"
                     >
-                      <img src={getDirectDriveImageUrl(m.media_url)} alt="Miniatura" className="w-full h-full object-cover" />
+                      <img 
+                        src={getDirectDriveImageUrl(m.media_url, 200)} 
+                        alt="Miniatura" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&q=80&w=200'
+                        }}
+                      />
                     </a>
                   ))}
                 </div>

@@ -255,7 +255,7 @@ export default function AdminAdvancesPage() {
                           </a>
                         )}
                         <span className="font-heading text-green-600 text-sm">{fmt(a.amount)}</span>
-                        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-all">
+                        <div className="flex items-center md:opacity-0 md:group-hover:opacity-100 transition-all">
                           <button
                             onClick={() => handleEdit(a)}
                             className="p-1.5 text-tertiary hover:text-primary transition-all"

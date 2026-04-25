@@ -231,7 +231,7 @@ export default function SociosPage() {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-heading text-foreground">Gerenciar Sócios e Permissões</h2>
           <p className="text-sm text-tertiary font-body mt-1">
@@ -240,7 +240,7 @@ export default function SociosPage() {
         </div>
         <button
           onClick={() => setIsAdding(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-architectural shadow-sm shadow-primary/20 hover:bg-primary/90 transition-all text-sm font-heading"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-white rounded-architectural shadow-sm shadow-primary/20 hover:bg-primary/90 transition-all text-sm font-heading active:scale-95"
         >
           <PlusCircle size={18} />
           Novo Membro
@@ -249,7 +249,7 @@ export default function SociosPage() {
 
       <div className="bg-surface-lowest rounded-architectural border border-ghost-border overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[500px]">
             <thead>
               <tr className="bg-surface-low/50 border-b border-ghost-border">
                 <th className="px-6 py-4 text-[10px] uppercase tracking-widest text-tertiary font-bold">Identificação</th>
@@ -330,14 +330,14 @@ export default function SociosPage() {
                       <div className="flex justify-end gap-1">
                         <button
                           onClick={() => handleEdit(socio)}
-                          className="p-2 text-tertiary hover:text-primary transition-all opacity-0 group-hover:opacity-100"
+                          className="p-2 text-tertiary hover:text-primary transition-all md:opacity-0 md:group-hover:opacity-100"
                           title="Editar Membro"
                         >
                           <Edit2 size={16} />
                         </button>
                         <button
                           onClick={() => handleDelete(socio.id, socio.full_name || 'Sócio')}
-                          className="p-2 text-tertiary hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                          className="p-2 text-tertiary hover:text-red-500 transition-all md:opacity-0 md:group-hover:opacity-100"
                           title="Excluir Membro"
                         >
                           <Trash2 size={16} />

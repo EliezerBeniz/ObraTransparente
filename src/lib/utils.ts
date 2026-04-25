@@ -9,35 +9,36 @@ export function formatDate(dateStr: string) {
   return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export function getDirectDriveImageUrl(url: string) {
+export function getDirectDriveImageUrl(url: string, size: number = 1200) {
   if (!url) return '';
   
   // Se não for link do Google Drive, retorna original
-  if (!url.includes('drive.google.com')) return url;
+  if (!url.includes('drive.google.com') && !url.includes('drive.usercontent.google.com') && !url.includes('docs.google.com')) {
+    return url;
+  }
   
   try {
     let fileId = '';
     
-    // Tenta extrair ID do formato /file/d/ID/view
-    if (url.includes('/file/d/')) {
-      fileId = url.split('/file/d/')[1].split('/')[0].split('?')[0];
-    } 
-    // Tenta extrair ID do formato ?id=ID ou &id=ID
-    else if (url.includes('id=')) {
-      const parts = url.split('id=');
-      if (parts.length > 1) {
-        fileId = parts[1].split('&')[0].split('/')[0].split('?')[0];
+    // Regex mais abrangente para extrair ID do Google Drive
+    const driveRegex = [
+      /\/file\/d\/([^\/?]+)/,
+      /id=([^\/&?]+)/,
+      /open\?id=([^\/&?]+)/,
+      /\/d\/([^\/?]+)/
+    ];
+
+    for (const regex of driveRegex) {
+      const match = url.match(regex);
+      if (match && match[1]) {
+        fileId = match[1];
+        break;
       }
-    }
-    // Tenta extrair ID do formato drive.google.com/open?id=ID
-    else if (url.includes('open?id=')) {
-      fileId = url.split('open?id=')[1].split('&')[0];
     }
     
     if (fileId) {
       // Endpoint de miniatura é o mais robusto para visualização pública (Anyone with the link)
-      // sz=w1200 garante uma boa resolução
-      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`;
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`;
     }
   } catch (e) {
     console.error('Erro ao converter link do Drive:', e);

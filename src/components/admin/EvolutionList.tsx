@@ -76,7 +76,7 @@ export default function EvolutionList({ updates, onEdit, onDelete }: EvolutionLi
             </div>
 
             {/* Quick Actions Overlay */}
-            <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity translate-y-[-10px] group-hover:translate-y-0 transition-transform duration-300">
+            <div className="absolute top-3 right-3 flex gap-1.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity md:translate-y-[-10px] md:group-hover:translate-y-0 transition-transform duration-300">
               <a
                 href={update.image_url}
                 target="_blank"

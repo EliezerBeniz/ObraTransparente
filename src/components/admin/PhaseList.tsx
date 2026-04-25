@@ -77,7 +77,7 @@ function SortableRow({ phase, onEdit, onDelete }: { phase: Phase; onEdit: (p: Ph
     <div 
       ref={setNodeRef} 
       style={style}
-      className={`grid grid-cols-[40px_60px_1fr_120px_140px_180px_100px] items-center border-b border-ghost-border hover:bg-surface-low/30 transition-colors group bg-white ${isDragging ? 'shadow-xl rounded-architectural ring-2 ring-primary/20 relative z-20' : ''}`}
+      className={`grid grid-cols-[40px_60px_1fr_120px_140px_180px_100px] items-center border-b border-ghost-border hover:bg-surface-low/30 transition-colors group bg-white min-w-[740px] ${isDragging ? 'shadow-xl rounded-architectural ring-2 ring-primary/20 relative z-20' : ''}`}
     >
       <div className="px-4 py-4 cursor-grab active:cursor-grabbing text-tertiary/40 hover:text-primary transition-colors" {...attributes} {...listeners}>
         <GripVertical size={16} />
@@ -196,8 +196,9 @@ export default function PhaseList({ phases, onEdit, onDelete, onReorder }: Phase
 
   return (
     <div className="bg-white border border-ghost-border rounded-architectural overflow-hidden shadow-soft">
+      <div className="overflow-x-auto">
       {/* Fake Table Header */}
-      <div className="grid grid-cols-[40px_60px_1fr_120px_140px_180px_100px] bg-surface-low/50 border-b border-ghost-border items-center">
+      <div className="grid grid-cols-[40px_60px_1fr_120px_140px_180px_100px] bg-surface-low/50 border-b border-ghost-border items-center min-w-[740px]">
         <div className="px-4 py-3 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold text-center"></div>
         <div className="px-2 py-3 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">#</div>
         <div className="px-4 py-3 text-[10px] uppercase tracking-widest font-heading text-tertiary font-bold">Etapa</div>
@@ -233,6 +234,7 @@ export default function PhaseList({ phases, onEdit, onDelete, onReorder }: Phase
           </div>
         </SortableContext>
       </DndContext>
+      </div>
     </div>
   )
 }

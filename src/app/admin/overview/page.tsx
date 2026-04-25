@@ -364,22 +364,22 @@ export default function AdminOverviewPage() {
   );
 
   return (
-    <div className="space-y-8 max-w-7xl">
+    <div className="space-y-6 md:space-y-8 max-w-7xl mx-auto px-1 sm:px-0">
       {/* ── Header ── */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-heading text-foreground">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="space-y-1">
+          <h2 className="text-2xl md:text-3xl font-heading text-foreground">
             {settings?.project_name ?? 'Visão Geral'}
           </h2>
-          <p className="text-sm text-tertiary font-body mt-1">
+          <p className="text-xs md:text-sm text-tertiary font-body">
             {settings?.current_stage ?? 'Painel de controle gerencial da obra'}
           </p>
         </div>
 
         {/* Radial Progress */}
-        <div className="flex items-center gap-4">
-          <div className="relative w-16 h-16 shrink-0">
-            <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90">
+        <div className="flex items-center gap-4 bg-surface-lowest sm:bg-transparent p-3 sm:p-0 rounded-architectural border border-ghost-border sm:border-none w-full sm:w-auto shadow-sm sm:shadow-none">
+          <div className="relative w-12 h-12 md:w-16 md:h-16 shrink-0">
+            <svg viewBox="0 0 36 36" className="w-12 h-12 md:w-16 md:h-16 -rotate-90">
               <circle cx="18" cy="18" r="15" fill="none" stroke="#E5E7EB" strokeWidth="3" />
               <circle cx="18" cy="18" r="15" fill="none" stroke="#3B82F6" strokeWidth="3"
                 strokeDasharray={`${radialPct * 0.942} 100`} strokeLinecap="round"
@@ -387,68 +387,73 @@ export default function AdminOverviewPage() {
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[11px] font-heading text-primary">{radialPct}%</span>
+              <span className="text-[10px] md:text-[11px] font-heading text-primary font-bold">{radialPct}%</span>
             </div>
           </div>
           <div>
-            <p className="text-[10px] text-tertiary font-heading uppercase tracking-wider">Conclusão</p>
-            <p className="text-sm font-heading text-foreground">da obra</p>
+            <p className="text-[9px] md:text-[10px] text-tertiary font-heading uppercase tracking-wider font-bold">Conclusão</p>
+            <p className="text-xs md:text-sm font-heading text-foreground">da obra</p>
           </div>
         </div>
       </div>
 
       {/* ── Filters ── */}
-      <div className="bg-surface-lowest border border-ghost-border rounded-architectural px-5 py-4 flex flex-wrap items-center gap-4 shadow-sm">
-        <div className="flex items-center gap-2 text-[10px] uppercase font-heading text-tertiary tracking-wider">
-          <BarChart3 size={14} /> Período
+      <div className="bg-surface-lowest border border-ghost-border rounded-architectural p-4 md:px-5 md:py-4 flex flex-col md:flex-row items-stretch md:items-center gap-4 shadow-sm">
+        <div className="flex items-center gap-2 text-[10px] uppercase font-heading text-tertiary tracking-wider font-black">
+          <BarChart3 size={14} className="text-primary" /> Período
         </div>
-        <select
-          value={datePreset} onChange={e => setDatePreset(e.target.value)}
-          className="bg-surface-low border-none py-2 pl-3 pr-8 text-xs font-body text-foreground rounded-architectural focus:ring-2 focus:ring-primary/10 outline-none appearance-none"
-          style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a1a1aa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right .5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.2em' }}
-        >
-          <option value="">Todo o período</option>
-          <option value="30">Últimos 30 dias</option>
-          <option value="60">Últimos 60 dias</option>
-          <option value="90">Últimos 90 dias</option>
-          <option value="180">Últimos 6 meses</option>
-          <option value="365">Último ano</option>
-          <option value="custom">Personalizado...</option>
-        </select>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:flex items-center gap-3">
+          <select
+            value={datePreset} onChange={e => setDatePreset(e.target.value)}
+            className="w-full md:w-auto bg-surface-low border border-ghost-border/50 py-2.5 pl-3 pr-10 text-xs font-body text-foreground rounded-architectural focus:ring-2 focus:ring-primary/10 outline-none appearance-none transition-all"
+            style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a1a1aa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right .75rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.2em' }}
+          >
+            <option value="">Todo o período</option>
+            <option value="30">Últimos 30 dias</option>
+            <option value="60">Últimos 60 dias</option>
+            <option value="90">Últimos 90 dias</option>
+            <option value="180">Últimos 6 meses</option>
+            <option value="365">Último ano</option>
+            <option value="custom">Personalizado...</option>
+          </select>
 
-        {datePreset === 'custom' && (
-          <>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-tertiary font-bold uppercase">De</span>
-              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
-                className="bg-surface-low border-none px-3 py-2 text-xs font-body text-foreground rounded-architectural focus:ring-2 focus:ring-primary/10 outline-none" />
+          {datePreset === 'custom' && (
+            <div className="flex items-center gap-2 col-span-full md:col-auto">
+              <div className="flex-1 flex items-center gap-2 bg-surface-low rounded-architectural px-3 border border-ghost-border/50">
+                <span className="text-[9px] text-tertiary font-bold uppercase">De</span>
+                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
+                  className="bg-transparent border-none py-2 text-xs font-body text-foreground outline-none w-full" />
+              </div>
+              <div className="flex-1 flex items-center gap-2 bg-surface-low rounded-architectural px-3 border border-ghost-border/50">
+                <span className="text-[9px] text-tertiary font-bold uppercase">Até</span>
+                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
+                  className="bg-transparent border-none py-2 text-xs font-body text-foreground outline-none w-full" />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-tertiary font-bold uppercase">Até</span>
-              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
-                className="bg-surface-low border-none px-3 py-2 text-xs font-body text-foreground rounded-architectural focus:ring-2 focus:ring-primary/10 outline-none" />
-            </div>
-          </>
-        )}
+          )}
+        </div>
 
-        <div className="h-4 w-px bg-ghost-border hidden md:block" />
         {totalPeriod > 0 && (
-          <span className="text-xs font-body text-tertiary">
-            <span className="font-heading text-foreground">{formatCurrency(totalPeriod)}</span> no período selecionado
-          </span>
+          <div className="md:ml-auto pt-2 md:pt-0 border-t md:border-t-0 md:border-l border-ghost-border md:pl-4">
+            <span className="text-xs font-body text-tertiary">
+              Gastos de <span className="font-heading text-foreground font-bold">{formatCurrency(totalPeriod)}</span> no período
+            </span>
+          </div>
         )}
       </div>
 
       {/* ── KPI Cards ── */}
       {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[...Array(8)].map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-surface-lowest h-28 rounded-architectural border border-ghost-border animate-pulse" />
           ))}
+          <div className="sm:col-span-2 bg-surface-lowest h-28 rounded-architectural border border-ghost-border animate-pulse" />
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KpiCard label="Total Investido (Pago)" value={formatCurrency(kpis?.total_pago ?? 0)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiCard label="Investido (Pago)" value={formatCurrency(kpis?.total_pago ?? 0)}
             sub={`${kpis?.count_pago ?? 0} despesas`} icon={CheckCircle2} color="#10B981" trend="neutral" />
           <KpiCard label="Pendente a Pagar" value={formatCurrency(kpis?.total_pendente ?? 0)}
             sub={`${kpis?.count_pendente ?? 0} despesas`} icon={Clock} color="#F59E0B" trend="neutral" />
@@ -460,14 +465,15 @@ export default function AdminOverviewPage() {
             sub="na equipe atual" icon={Hammer} color="#8B5CF6" />
           <KpiCard label="Fornecedores" value={String(kpis?.supplier_count ?? 0)}
             sub="cadastrados" icon={Store} color="#EC4899" />
-          <div className="col-span-2 bg-surface-lowest p-5 rounded-architectural border border-ghost-border shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
-            <div>
-              <p className="text-[9px] font-heading uppercase tracking-widest text-tertiary mb-1">Acerto de Contas</p>
+          
+          <div className="sm:col-span-2 bg-surface-lowest p-5 rounded-architectural border border-ghost-border shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 group hover:shadow-md transition-all">
+            <div className="text-center sm:text-left">
+              <p className="text-[9px] font-heading uppercase tracking-widest text-tertiary mb-1 font-bold">Acerto de Contas</p>
               <p className="text-sm font-heading text-foreground">Balanço entre sócios</p>
-              <p className="text-[11px] text-tertiary mt-1 font-body">Com base nos gastos pagos e aportes</p>
+              <p className="text-[11px] text-tertiary mt-1 font-body">Comparação entre gastos pagos e aportes</p>
             </div>
             <Link href="/dashboard/balanco"
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-architectural text-xs font-heading hover:bg-primary/90 transition-all shrink-0">
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white rounded-architectural text-xs font-heading font-bold uppercase tracking-widest hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all shrink-0">
               Ver Balanço <ChevronRight size={14} />
             </Link>
           </div>
@@ -476,8 +482,8 @@ export default function AdminOverviewPage() {
 
       {/* ── Charts Section ── */}
       <div className="bg-surface-lowest rounded-architectural border border-ghost-border shadow-sm overflow-hidden">
-        {/* Tab Header */}
-        <div className="flex border-b border-ghost-border">
+        {/* Tab Header - Scrollable on mobile */}
+        <div className="flex border-b border-ghost-border overflow-x-auto no-scrollbar">
           {[
             { id: 'monthly',    label: 'Evolução Mensal',       icon: BarChart3 },
             { id: 'categories', label: 'Por Categoria',         icon: PieChart },
@@ -485,10 +491,10 @@ export default function AdminOverviewPage() {
           ].map(tab => (
             <button key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-5 py-3.5 text-xs font-heading transition-all border-b-2 ${
+              className={`flex items-center gap-2 px-5 py-3.5 text-xs font-heading transition-all border-b-2 whitespace-nowrap shrink-0 ${
                 activeTab === tab.id
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-tertiary hover:text-foreground'
+                  ? 'border-primary text-primary bg-primary/5'
+                  : 'border-transparent text-tertiary hover:text-foreground hover:bg-surface-low'
               }`}
             >
               <tab.icon size={14} /> {tab.label}
@@ -496,15 +502,19 @@ export default function AdminOverviewPage() {
           ))}
         </div>
 
-        <div className="p-6">
+        <div className="p-4 md:p-6 overflow-x-auto">
           {loading ? (
             <div className="h-56 animate-pulse bg-surface-low rounded-architectural" />
-          ) : activeTab === 'monthly' ? (
-            <MonthlyBarsChart data={monthly} />
-          ) : activeTab === 'categories' ? (
-            <DonutChart segments={donutSegments} />
           ) : (
-            <AdvancesLineChart data={advances} />
+            <div className="min-w-[300px]">
+              {activeTab === 'monthly' ? (
+                <MonthlyBarsChart data={monthly} />
+              ) : activeTab === 'categories' ? (
+                <DonutChart segments={donutSegments} />
+              ) : (
+                <AdvancesLineChart data={advances} />
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -512,34 +522,37 @@ export default function AdminOverviewPage() {
       {/* ── Bottom Grid: Top 5 + Quick Links ── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Top 5 Expenses */}
-        <div className="lg:col-span-3 bg-surface-lowest rounded-architectural border border-ghost-border shadow-sm p-6 space-y-4">
+        <div className="lg:col-span-3 bg-surface-lowest rounded-architectural border border-ghost-border shadow-sm p-5 md:p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-heading text-base text-foreground">Top 5 Maiores Despesas Pagas</h3>
-            <Link href="/admin/expenses" className="text-[10px] font-body text-primary hover:underline uppercase tracking-wider flex items-center gap-1">
+            <h3 className="font-heading text-base text-foreground font-bold">Top 5 Maiores Despesas</h3>
+            <Link href="/admin/expenses" className="text-[10px] font-heading text-primary hover:underline uppercase tracking-widest font-black flex items-center gap-1">
               Ver Todas <ChevronRight size={12} />
             </Link>
           </div>
           {loading ? (
-            <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-10 animate-pulse bg-surface-low rounded-architectural" />)}</div>
+            <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-12 animate-pulse bg-surface-low rounded-architectural" />)}</div>
           ) : top.length === 0 ? (
-            <p className="text-sm text-tertiary text-center py-8">Sem despesas pagas no período</p>
+            <p className="text-sm text-tertiary text-center py-10">Sem despesas pagas no período</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {top.map((t, i) => (
-                <div key={t.id} className="space-y-1">
+                <div key={t.id} className="space-y-1.5">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-body text-foreground truncate max-w-[60%] flex items-center gap-2">
-                      <span className="text-[9px] font-heading text-tertiary w-4">#{i + 1}</span>
+                    <span className="font-body text-foreground truncate max-w-[65%] flex items-center gap-2">
+                      <span className="text-[9px] font-heading text-tertiary w-5 h-5 flex items-center justify-center bg-surface-low rounded-full">#{i + 1}</span>
                       {t.title}
                     </span>
-                    <span className="font-heading text-foreground tabular-nums">{formatCurrency(t.amount)}</span>
+                    <span className="font-heading text-foreground tabular-nums font-bold">{formatCurrency(t.amount)}</span>
                   </div>
-                  <div className="h-1.5 bg-surface-low rounded-full overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-700"
+                  <div className="h-2 bg-surface-low rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-1000 ease-out"
                       style={{ width: `${(t.amount / topMax) * 100}%`, background: CATEGORY_COLORS[t.category] ?? '#6B7280' }}
                     />
                   </div>
-                  <span className="text-[9px] text-tertiary font-body">{t.category}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[9px] text-tertiary font-heading uppercase tracking-widest font-bold">{t.category}</span>
+                    <span className="text-[9px] text-tertiary font-body">{new Date(t.date).toLocaleDateString('pt-BR')}</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -548,26 +561,28 @@ export default function AdminOverviewPage() {
 
         {/* Quick Nav */}
         <div className="lg:col-span-2 space-y-4">
-          <h3 className="font-heading text-base text-foreground">Acesso Rápido</h3>
-          {[
-            { href: '/admin/expenses',      icon: CheckCircle2,    label: 'Gerenciar Despesas',   color: '#10B981' },
-            { href: '/admin/adiantamentos', icon: Wallet,          label: 'Caixa da Obra',        color: '#3B82F6' },
-            { href: '/admin/pedreiros',     icon: Hammer,          label: 'Equipe de Obra',       color: '#8B5CF6' },
-            { href: '/admin/compras',       icon: Store,           label: 'Lista de Compras',     color: '#F59E0B' },
-            { href: '/dashboard/balanco',   icon: ArrowRightLeft,  label: 'Balanço Financeiro',   color: '#6366F1' },
-          ].map(link => (
-            <Link key={link.href} href={link.href}
-              className="flex items-center justify-between p-4 bg-surface-lowest rounded-architectural border border-ghost-border hover:shadow-md hover:-translate-y-0.5 transition-all group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg" style={{ background: `${link.color}15`, color: link.color }}>
-                  <link.icon size={16} />
+          <h3 className="font-heading text-base text-foreground font-bold">Acesso Rápido</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+            {[
+              { href: '/admin/expenses',      icon: CheckCircle2,    label: 'Gerenciar Despesas',   color: '#10B981' },
+              { href: '/admin/adiantamentos', icon: Wallet,          label: 'Caixa da Obra',        color: '#3B82F6' },
+              { href: '/admin/pedreiros',     icon: Hammer,          label: 'Equipe de Obra',       color: '#8B5CF6' },
+              { href: '/admin/compras',       icon: Store,           label: 'Lista de Compras',     color: '#F59E0B' },
+              { href: '/dashboard/balanco',   icon: ArrowRightLeft,  label: 'Balanço Financeiro',   color: '#6366F1' },
+            ].map(link => (
+              <Link key={link.href} href={link.href}
+                className="flex items-center justify-between p-4 bg-surface-lowest rounded-architectural border border-ghost-border hover:shadow-md hover:-translate-y-0.5 transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg transition-colors group-hover:bg-primary group-hover:text-white" style={{ background: `${link.color}15`, color: link.color }}>
+                    <link.icon size={16} />
+                  </div>
+                  <span className="text-sm font-heading text-foreground font-medium">{link.label}</span>
                 </div>
-                <span className="text-sm font-heading text-foreground">{link.label}</span>
-              </div>
-              <ChevronRight size={14} className="text-tertiary group-hover:text-primary transition-colors" />
-            </Link>
-          ))}
+                <ChevronRight size={14} className="text-tertiary group-hover:text-primary transition-transform group-hover:translate-x-1" />
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>
